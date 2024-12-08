@@ -4,10 +4,11 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { ActividadService } from '../services/actividad.service';
 import { Actividad } from '../models/actividad.model';
 import { Router } from '@angular/router';
-
+import { ActividadesEditComponent } from '../actividades/actividades-edit.component';
 
 @Component({
   selector: 'app-actividades-list',
@@ -86,7 +87,11 @@ export class ActividadesListComponent implements OnInit {
   actividades: Actividad[] = [];
   columnas: string[] = ['nombre', 'costo', 'cupo', 'acciones'];
 
-  constructor(private actividadService: ActividadService, private router: Router) {}
+  constructor(
+    private actividadService: ActividadService, 
+    private router: Router, 
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     this.cargarActividades();
@@ -94,18 +99,25 @@ export class ActividadesListComponent implements OnInit {
 
   cargarActividades(): void {
     this.actividadService.getActividades().subscribe((data: Actividad[]) => {
-      console.log(data); 
       this.actividades = data;
     });
   }
-  
 
   nuevaActividad() {
     this.router.navigate(['/dashboard/actividades/nueva']);
   }
 
   editarActividad(actividad: Actividad) {
-    this.router.navigate(['/actividades', actividad.id, 'editar']);
+    const dialogRef = this.dialog.open(ActividadesEditComponent, {
+      width: '600px',
+      data: actividad
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.cargarActividades();  
+      }
+    });
   }
 
   eliminarActividad(id?: number): void {

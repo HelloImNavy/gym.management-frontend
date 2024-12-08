@@ -7,7 +7,7 @@ import { Actividad } from '../models/actividad.model';
   providedIn: 'root'
 })
 export class ActividadService {
-  private apiUrl = 'http://localhost:8080/actividades';
+  private apiUrl = 'http://localhost:8080/actividades'; 
 
   constructor(private http: HttpClient) {}
 
@@ -28,6 +28,8 @@ export class ActividadService {
   }
 
   updateActividad(actividad: any): Observable<Actividad> {
+    console.log("Enviando actividad para actualizar: ", actividad); // Verifica los datos aquí
     return this.http.put<Actividad>(`${this.apiUrl}/${actividad.id}`, actividad);
   }
+  
 }

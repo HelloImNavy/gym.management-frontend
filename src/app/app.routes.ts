@@ -8,6 +8,7 @@ import { authGuard } from './auth/auth.guard';
 import { ActividadFormComponent } from './actividades/actividad-form.component';
 import { CobrosListComponent } from './cobros-list/cobros-list.component';
 import { ActividadesListComponent } from './actividades/actividades-list.component';
+import { ActividadesEditComponent } from './actividades/actividades-edit.component';
 
 
 export const routes: Routes = [
@@ -24,7 +25,7 @@ export const routes: Routes = [
       { path: 'miembros/:id', component: MiembrosFormComponent },
       { path: 'cobros', component: CobrosListComponent}, 
       { path: 'actividades/nueva', component: ActividadFormComponent },
-      { path: 'actividades/:id/editar', component: ActividadFormComponent },
+      { path: 'actividades/:id/editar', component: ActividadesEditComponent },
       { path: 'actividades', component: ActividadesListComponent },
 
     ]
