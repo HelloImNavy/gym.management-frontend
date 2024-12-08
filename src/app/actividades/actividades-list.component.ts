@@ -1,72 +1,90 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { RouterModule } from '@angular/router';
 import { ActividadService } from '../services/actividad.service';
 import { Actividad } from '../models/actividad.model';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
+
 
 @Component({
   selector: 'app-actividades-list',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, FormsModule, MatIconModule],
+  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, RouterModule],
   template: `
-    <h2>LISTA DE ACTIVIDADES</h2>
-    <button (click)="nuevaActividad()">NUEVA ACTIVIDAD</button>
-    <div>
-      <input [(ngModel)]="filtroNombre" placeholder="Buscar por nombre">
-      <input type="number" [(ngModel)]="filtroCostoMin" placeholder="Costo mínimo">
-      <input type="number" [(ngModel)]="filtroCostoMax" placeholder="Costo máximo">
-      <button (click)="filtrarActividades()">Filtrar</button>
+    <h2>ACTIVIDADES</h2>
+    <button mat-raised-button 
+            style="background-color: #333; color: white; float: right;" 
+            (click)="nuevaActividad()">Nueva actividad</button>
+
+    <div class="container">
+      <table mat-table [dataSource]="actividades" class="mat-elevation-z8">
+        <ng-container matColumnDef="nombre">
+          <th mat-header-cell *matHeaderCellDef>Nombre</th>
+          <td mat-cell *matCellDef="let actividad">{{ actividad.nombre }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="costo">
+          <th mat-header-cell *matHeaderCellDef>Precio</th>
+          <td mat-cell *matCellDef="let actividad">{{ actividad.costo }}€</td>
+        </ng-container>
+
+        <ng-container matColumnDef="cupo">
+          <th mat-header-cell *matHeaderCellDef>Plazas</th>
+          <td mat-cell *matCellDef="let actividad">{{ actividad.cupoUsado }} / {{ actividad.cupoTotal }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+          <td mat-cell *matCellDef="let actividad">
+            <button mat-icon-button color="primary" (click)="editarActividad(actividad)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="eliminarActividad(actividad.id)">
+              <mat-icon>delete</mat-icon>
+            </button>
+            <button mat-icon-button color="accent" (click)="verInscripciones(actividad.id)">
+              <mat-icon>group</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let row; columns: columnas;"></tr>
+      </table>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Costo</th>
-          <th>Cupo</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let actividad of actividades">
-          <td>{{ actividad.nombre }}</td>
-          <td>{{ actividad.costo | currency }}</td>
-          <td>{{ actividad.cupoUsado }} / {{ actividad.cupoTotal }}</td>
-          <td [ngClass]="{ 'lleno': actividad.cupoUsado >= actividad.cupoTotal, 'casi-lleno': actividad.cupoUsado >= actividad.cupoTotal * 0.8 }">
-            {{ actividad.cupoUsado }} / {{ actividad.cupoTotal }}
-            <span *ngIf="actividad.cupoUsado >= actividad.cupoTotal" class="alerta">Llena</span>
-          </td>
-          <td>
-            <button (click)="editarActividad(actividad)" mat-icon-button><mat-icon>edit</mat-icon></button>
-            <button (click)="eliminarActividad(actividad.id)" mat-icon-button><mat-icon>delete</mat-icon></button>
-            <button (click)="verInscripciones(actividad.id)" mat-icon-button><mat-icon>group</mat-icon></button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
   `,
   styles: [`
-    .lleno {
-      color: red;
+    .container {
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+    }
+    button[mat-raised-button] {
+      margin-bottom: 20px;
+    }
+    .mat-header-cell {
+      background-color: #f5f5f5;
       font-weight: bold;
     }
-    .casi-lleno {
-      color: orange;
+    .mat-cell {
+      text-align: center;
     }
-    .alerta {
-      margin-left: 10px;
-      color: red;
-      font-size: smaller;
+    .mat-icon-button {
+      margin: 0 5px;
+    }
+    .mat-elevation-z8 {
+      border-radius: 8px;
     }
   `]
 })
 export class ActividadesListComponent implements OnInit {
   actividades: Actividad[] = [];
-  filtroNombre: string = '';
-  filtroCostoMin?: number;
-  filtroCostoMax?: number;
+  columnas: string[] = ['nombre', 'costo', 'cupo', 'acciones'];
 
   constructor(private actividadService: ActividadService, private router: Router) {}
 
@@ -76,7 +94,7 @@ export class ActividadesListComponent implements OnInit {
 
   cargarActividades(): void {
     this.actividadService.getActividades().subscribe((data: Actividad[]) => {
-      console.log(data); // Para verificar los datos recibidos
+      console.log(data); 
       this.actividades = data;
     });
   }
@@ -100,13 +118,5 @@ export class ActividadesListComponent implements OnInit {
 
   verInscripciones(id: number) {
     this.router.navigate(['/dashboard/actividades', id, 'inscripciones']);
-  }
-
-  filtrarActividades(): void {
-    this.actividades = this.actividades.filter(a =>
-      (!this.filtroNombre || a.nombre.toLowerCase().includes(this.filtroNombre.toLowerCase())) &&
-      (!this.filtroCostoMin || a.costo >= this.filtroCostoMin) &&
-      (!this.filtroCostoMax || a.costo <= this.filtroCostoMax)
-    );
   }
 }
