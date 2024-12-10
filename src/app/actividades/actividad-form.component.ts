@@ -4,11 +4,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { CommonModule } from '@angular/common'; 
 
 @Component({
   selector: 'app-actividad-form',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   template: `
     <h2>{{ isEditing ? 'Editar Actividad' : 'Nueva Actividad' }}</h2>
     <form (ngSubmit)="guardarActividad()">

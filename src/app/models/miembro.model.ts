@@ -2,12 +2,15 @@ export interface Miembro {
   id?: number;
   nombre: string;
   apellidos: string;
-  telefono: string;
   direccion: string;
+  telefono: string;
   fechaNacimiento: string;
+  fechaAlta: string;
+  fechaBaja?: string;
   observaciones: string;
-  inscripciones: Inscripcion[];  // Lista de inscripciones
+  actividades: any[];
 }
+
 
 export interface Inscripcion {
   actividadId: number;  // ID de la actividad

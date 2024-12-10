@@ -3,6 +3,6 @@ export interface Actividad {
     nombre: string;      // Nombre de la actividad
     costo: number;       // Costo de la actividad
     cupoUsado: number;   // Número de cupos ya ocupados
-    cupoTotal: number;   // Número total de cupos disponibles
+    cupo: number;   // Número total de cupos disponibles
   }
   

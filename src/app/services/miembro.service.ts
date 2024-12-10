@@ -9,6 +9,8 @@ import { Miembro } from '../models/miembro.model';
 export class MiembroService {
   private apiUrl = 'http://localhost:8080/miembros';
   private actividadesUrl = 'http://localhost:8080/actividades';
+  private inscripcionesUrl = 'http://localhost:8080/inscripciones';
+  private cobrosUrl = 'http://localhost:8080/cobros';
 
   constructor(private http: HttpClient) {}
 
@@ -28,34 +30,45 @@ export class MiembroService {
     return this.http.put<Miembro>(`${this.apiUrl}/${id}`, miembro);
   }
 
-  eliminarMiembro(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  eliminarMiembro(id: number): Observable<string> {
+    return this.http.delete<string>(`${this.apiUrl}/${id}`, { responseType: 'text' as 'json' });
   }
+  
 
   obtenerActividades(): Observable<any[]> {
     return this.http.get<any[]>(this.actividadesUrl);
   }
 
   darDeBajaMiembro(id: number, fechaBaja: string): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${id}`, { fechaBaja });
+    return this.http.put<void>(`${this.apiUrl}/${id}/dar-de-baja`, { fechaBaja });
   }
 
-  // Métodos adicionales
+
+  getActividadesInscritas(idMiembro: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.inscripcionesUrl}/actividades/${idMiembro}`);
+  }
+
+  getActividadesNoRealizadas(idMiembro: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.inscripcionesUrl}/actividades-no-realizadas/${idMiembro}`);
+  }
+
+  getCobros(idMiembro: number, ano: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.cobrosUrl}/cobros/${idMiembro}?ano=${ano}`);
+  }
+
+  crearInscripciones(inscripciones: any[]): Observable<any> {
+    const inscripcionesDTO = inscripciones.map(inscripcion => ({
+      idMiembro: inscripcion.miembro.id,
+      idActividad: inscripcion.actividad.id,
+      fechaAlta: inscripcion.fechaAlta
+    }));
+
+    return this.http.post(this.inscripcionesUrl, inscripcionesDTO);
+  }
+
   getHistorialAltasBajas(idMiembro: number): Observable<{ fechaAlta: string; fechaBaja?: string }[]> {
-    return this.http.get<{ fechaAlta: string; fechaBaja?: string }[]>(`${this.apiUrl}/${idMiembro}/historial`);
-  }
-
-  getActividadesInscritas(idMiembro: number): Observable<{ nombre: string }[]> {
-    return this.http.get<{ nombre: string }[]>(`${this.apiUrl}/${idMiembro}/actividades-inscritas`);
-  }
-
-  getActividadesNoRealizadas(idMiembro: number): Observable<{ nombre: string }[]> {
-    return this.http.get<{ nombre: string }[]>(`${this.apiUrl}/${idMiembro}/actividades-no-realizadas`);
-  }
-
-  getCobros(idMiembro: number, ano: number): Observable<{ mes: string; pagado: boolean; fechaPago?: string }[]> {
-    return this.http.get<{ mes: string; pagado: boolean; fechaPago?: string }[]>(
-      `${this.apiUrl}/${idMiembro}/cobros?año=${ano}`
-    );
+    return this.http.get<{ fechaAlta: string; fechaBaja?: string }[]>(`${this.inscripcionesUrl}/historial/${idMiembro}`);
   }
 }
+
+

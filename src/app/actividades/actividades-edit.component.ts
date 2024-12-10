@@ -8,13 +8,14 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { CommonModule } from '@angular/common';
 
 
 
 @Component({
   selector: 'app-actividades-edit',
   standalone: true,
-  imports: [ReactiveFormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  imports: [ReactiveFormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule, CommonModule],
   template: `
     <h2 mat-dialog-title>Editar Actividad</h2>
     <form [formGroup]="actividadForm" (ngSubmit)="onSubmit()">
@@ -33,8 +34,8 @@ import { MatButtonModule } from '@angular/material/button';
 
         <mat-form-field appearance="fill" class="full-width">
           <mat-label>Cupo Total</mat-label>
-          <input matInput id="cupoTotal" formControlName="cupoTotal" type="number" placeholder="Cupo total de plazas" />
-          <mat-error *ngIf="actividadForm.controls['cupoTotal'].hasError('required')">Este campo es obligatorio.</mat-error>
+          <input matInput id="cupo" formControlName="cupo" type="number" placeholder="Cupo total de plazas" />
+          <mat-error *ngIf="actividadForm.controls['cupo'].hasError('required')">Este campo es obligatorio.</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="fill" class="full-width">
@@ -100,7 +101,7 @@ export class ActividadesEditComponent {
     this.actividadForm = this.fb.group({
       nombre: [this.data.nombre, Validators.required],
       precio: [this.data.costo, [Validators.required, Validators.min(0)]],
-      cupoTotal: [this.data.cupoTotal, [Validators.required, Validators.min(1)]],
+      cupo: [this.data.cupo, [Validators.required, Validators.min(1)]],
       cupoUsado: [this.data.cupoUsado, [Validators.required, Validators.min(0)]],
     });
   }

@@ -10,7 +10,6 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MiembroService } from '../services/miembro.service';
 
-
 @Component({
   selector: 'app-miembros-form',
   standalone: true,
@@ -80,7 +79,7 @@ import { MiembroService } from '../services/miembro.service';
         </div>
       </form>
     </div>
-    `,
+  `,
   styles: [`
     .form-container {
       padding: 30px;
@@ -97,7 +96,7 @@ import { MiembroService } from '../services/miembro.service';
       margin-top: 16px;
     }
     ::ng-deep .mat-dialog-container {
-    z-index: 1050 !important;  
+      z-index: 1050 !important;  
     }
   `],
 })
@@ -116,7 +115,7 @@ export class MiembrosFormComponent implements OnInit {
       nombre: ['', Validators.required],
       apellidos: ['', Validators.required],
       direccion: [''],
-      fechaNacimiento: [''],
+      fechaNacimiento: ['', Validators.required],
       telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
       actividades: [[], Validators.required],
       observaciones: [''],
@@ -142,25 +141,42 @@ export class MiembrosFormComponent implements OnInit {
   onSubmit(): void {
     if (this.miembroForm.valid) {
       const miembroData = this.miembroForm.value;
-  
-      const payload = {
+      
+      // Crear el objeto miembro con los campos requeridos
+      const socioPayload = {
         nombre: miembroData.nombre,
         apellidos: miembroData.apellidos,
         direccion: miembroData.direccion,
         telefono: miembroData.telefono,
         fechaNacimiento: miembroData.fechaNacimiento,
         observaciones: miembroData.observaciones,
-        inscripciones: miembroData.actividades.map((actividadId: number) => ({
-          actividad: { id: actividadId }, // Relación con la actividad
-          fechaAlta: miembroData.fechaAlta,
-        })),
+        fechaAlta: miembroData.fechaAlta,
+        actividades: [] 
       };
-  
-      // Llama al servicio para crear al miembro
-      this.miembroService.crearMiembro(payload).subscribe({
-        next: () => {
-          this.snackBar.open('Socio añadido con éxito.', 'Cerrar', { duration: 3000 });
-          this.dialogRef.close(true); // Cierra el popup
+    
+      // Crear el miembro
+      this.miembroService.crearMiembro(socioPayload).subscribe({
+        next: (response) => {
+          const socioId = response.id; // ID del nuevo miembro
+    
+          // Crear las inscripciones asociadas
+          const inscripciones = miembroData.actividades.map((actividadId: number) => ({
+            miembro: { id: socioId }, // Usamos el ID recién creado
+            actividad: { id: actividadId },
+            fechaAlta: miembroData.fechaAlta,
+          }));
+    
+          // Llama al servicio para crear las inscripciones
+          this.miembroService.crearInscripciones(inscripciones).subscribe({
+            next: () => {
+              this.snackBar.open('Socio e inscripciones añadidos con éxito.', 'Cerrar', { duration: 3000 });
+              this.dialogRef.close(true);
+            },
+            error: (err) => {
+              this.snackBar.open('Error al añadir inscripciones.', 'Cerrar', { duration: 3000 });
+              console.error(err);
+            },
+          });
         },
         error: (err) => {
           this.snackBar.open('Error al añadir socio.', 'Cerrar', { duration: 3000 });
@@ -169,6 +185,7 @@ export class MiembrosFormComponent implements OnInit {
       });
     }
   }
+  
   
 
   onCancel(): void {

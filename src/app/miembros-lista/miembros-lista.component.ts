@@ -95,15 +95,18 @@ export class MiembroListaComponent implements OnInit {
   eliminarMiembro(id: number | undefined): void {
     if (id && confirm('¿Está seguro de eliminar este miembro?')) {
       this.miembroService.eliminarMiembro(id).subscribe({
-        next: () => {
+        next: (mensaje: string) => {
+          alert(mensaje); 
           this.cargarMiembros();
         },
         error: (error) => {
           console.error('Error al eliminar miembro:', error);
-        }
+        },
       });
     }
   }
+  
+  
 
   abrirFormularioNuevoMiembro(): void {
     const dialogRef = this.dialog.open(MiembrosFormComponent, { width: '600px', data: {} });

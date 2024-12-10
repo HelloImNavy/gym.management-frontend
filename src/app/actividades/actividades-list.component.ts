@@ -34,7 +34,7 @@ import { ActividadesEditComponent } from '../actividades/actividades-edit.compon
 
         <ng-container matColumnDef="cupo">
           <th mat-header-cell *matHeaderCellDef>Plazas</th>
-          <td mat-cell *matCellDef="let actividad">{{ actividad.cupoUsado }} / {{ actividad.cupoTotal }}</td>
+          <td mat-cell *matCellDef="let actividad">{{ actividad.cupoUsado }} / {{ actividad.cupo }}</td>
         </ng-container>
 
         <ng-container matColumnDef="acciones">
