@@ -9,6 +9,7 @@ import { ActividadService } from '../services/actividad.service';
 import { Actividad } from '../models/actividad.model';
 import { Router } from '@angular/router';
 import { ActividadesEditComponent } from '../actividades/actividades-edit.component';
+import { InscripcionesListComponent } from '../inscripciones/inscripciones-list.component';
 
 @Component({
   selector: 'app-actividades-list',
@@ -129,6 +130,10 @@ export class ActividadesListComponent implements OnInit {
   }
 
   verInscripciones(id: number) {
-    this.router.navigate(['/dashboard/actividades', id, 'inscripciones']);
+    const dialogRef = this.dialog.open(InscripcionesListComponent, {
+      width: '800px',
+      data: { actividadId: id }
+    });
   }
+  
 }
