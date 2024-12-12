@@ -4,11 +4,11 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { MiembroListaComponent } from './miembros-lista/miembros-lista.component';
 import { MiembrosFormComponent } from './miembros-form/miembros-form.component';
 import { authGuard } from './auth/auth.guard';
-// import { InscripcionesComponent } from './cobros-list/cobros-list.component';
 import { ActividadFormComponent } from './actividades/actividad-form.component';
-import { CobrosListComponent } from './cobros-list/cobros-list.component';
+import { CobrosListComponent } from './cobros/cobros-list.component';
 import { ActividadesListComponent } from './actividades/actividades-list.component';
 import { ActividadesEditComponent } from './actividades/actividades-edit.component';
+import { ProductoListComponent } from './productos/producto-list.component';
 
 
 export const routes: Routes = [
@@ -27,6 +27,7 @@ export const routes: Routes = [
       { path: 'actividades/nueva', component: ActividadFormComponent },
       { path: 'actividades/:id/editar', component: ActividadesEditComponent },
       { path: 'actividades', component: ActividadesListComponent },
+      { path: 'productos', component: ProductoListComponent },
 
     ]
   }
