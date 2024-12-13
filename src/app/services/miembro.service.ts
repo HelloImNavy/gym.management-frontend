@@ -26,14 +26,19 @@ export class MiembroService {
     return this.http.post<Miembro>(this.apiUrl, miembro);
   }
 
-  actualizarMiembro(id: number, miembro: Miembro): Observable<Miembro> {
-    return this.http.put<Miembro>(`${this.apiUrl}/${id}`, miembro);
+  actualizarMiembro(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}}`, data);
   }
+  
+  getDetallesMiembro(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${id}`);
+  }
+  
 
   eliminarMiembro(id: number): Observable<string> {
     return this.http.delete<string>(`${this.apiUrl}/${id}`, { responseType: 'text' as 'json' });
   }
-  
+
 
   obtenerActividades(): Observable<any[]> {
     return this.http.get<any[]>(this.actividadesUrl);

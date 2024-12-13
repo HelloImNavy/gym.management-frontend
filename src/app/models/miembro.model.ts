@@ -13,7 +13,7 @@ export interface Miembro {
 
 
 export interface Inscripcion {
-  actividadId: number;  // ID de la actividad
-  fechaAlta: string;    // Fecha de alta (en formato string o LocalDate)
-  fechaBaja?: string;   // Fecha de baja (opcional)
+  actividadId: number; 
+  fechaAlta: string;    
+  fechaBaja?: string;  
 }

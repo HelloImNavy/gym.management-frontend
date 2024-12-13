@@ -7,7 +7,7 @@ import { RouterModule } from '@angular/router';
 import { MiembroService } from '../services/miembro.service';
 import { Miembro } from '../models/miembro.model';
 import { MiembrosFormComponent } from '../miembros-form/miembros-form.component';
-import { MiembrosDetallesComponent } from '../miembros/miembros-detalles.component';
+import { MiembroDetailComponent } from '../miembros/miembros-details.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
 
@@ -105,8 +105,7 @@ export class MiembroListaComponent implements OnInit {
       });
     }
   }
-  
-  
+    
 
   abrirFormularioNuevoMiembro(): void {
     const dialogRef = this.dialog.open(MiembrosFormComponent, { width: '600px', data: {} });
@@ -116,11 +115,19 @@ export class MiembroListaComponent implements OnInit {
       }
     });
   }
+  
 
   abrirDetallesMiembro(miembro: Miembro): void {
-    this.dialog.open(MiembrosDetallesComponent, {
-      width: '800px',
-      data: miembro
+    const dialogRef = this.dialog.open(MiembroDetailComponent, {
+      width: '600px',
+      data: miembro, 
+    });
+  
+    dialogRef.afterClosed().subscribe((resultado) => {
+      if (resultado) {
+        this.cargarMiembros(); 
+      }
     });
   }
+  
 }
