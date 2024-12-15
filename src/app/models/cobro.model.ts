@@ -8,6 +8,7 @@ export interface Cobro {
     concepto: string; 
     fecha: string;
     estado: string; 
+    monto: number;
     fechaPago?: string; 
   }
   

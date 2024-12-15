@@ -26,8 +26,8 @@ export class MiembroService {
     return this.http.post<Miembro>(this.apiUrl, miembro);
   }
 
-  actualizarMiembro(id: number, data: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}}`, data);
+  actualizarMiembro(id: number, miembro: Miembro): Observable<Miembro> {
+    return this.http.put<Miembro>(`${this.apiUrl}/${id}`, miembro);
   }
   
   getDetallesMiembro(id: number): Observable<any> {
@@ -39,7 +39,6 @@ export class MiembroService {
     return this.http.delete<string>(`${this.apiUrl}/${id}`, { responseType: 'text' as 'json' });
   }
 
-
   obtenerActividades(): Observable<any[]> {
     return this.http.get<any[]>(this.actividadesUrl);
   }
@@ -48,13 +47,8 @@ export class MiembroService {
     return this.http.put<void>(`${this.apiUrl}/${id}/dar-de-baja`, { fechaBaja });
   }
 
-
   getActividadesInscritas(idMiembro: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.inscripcionesUrl}/actividades/${idMiembro}`);
-  }
-
-  getActividadesNoRealizadas(idMiembro: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.inscripcionesUrl}/actividades-no-realizadas/${idMiembro}`);
   }
 
   getCobros(idMiembro: number, ano: number): Observable<any[]> {
@@ -74,6 +68,12 @@ export class MiembroService {
   getHistorialAltasBajas(idMiembro: number): Observable<{ fechaAlta: string; fechaBaja?: string }[]> {
     return this.http.get<{ fechaAlta: string; fechaBaja?: string }[]>(`${this.inscripcionesUrl}/historial/${idMiembro}`);
   }
+
+  darDeBajaActividad(miembroId: number, actividadId: number): Observable<void> {
+      return this.http.put<void>(`${this.apiUrl}/${miembroId}/baja?actividadId=${actividadId}`, {});
+  }
+  
+  
 }
 
 

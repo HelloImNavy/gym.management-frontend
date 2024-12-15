@@ -11,22 +11,27 @@ export class CobrosService {
 
   constructor(private http: HttpClient) {}
 
-  // Obtener todos los cobros
   getCobros(): Observable<Cobro[]> {
     return this.http.get<Cobro[]>(this.apiUrl);
   }
-
   
   addCobro(cobro: Cobro): Observable<Cobro> {
     return this.http.post<Cobro>(this.apiUrl, cobro);
   }
 
-  
   filterCobros(params: any): Observable<Cobro[]> {
     return this.http.get<Cobro[]>(`${this.apiUrl}`, { params });
   }
 
   getCobrosPendientes(): Observable<Cobro[]> {
     return this.http.get<Cobro[]>(`${this.apiUrl}/pendientes`);
+  }
+
+  getMiembros(): Observable<any[]> {
+    return this.http.get<any[]>('http://localhost:8080/miembros');
+  }
+
+  pagarCobro(cobroId: number): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${cobroId}/pagar`, {});
   }
 }

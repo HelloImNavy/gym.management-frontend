@@ -24,6 +24,13 @@ import { CobrosService } from '../services/cobros.service';
     <h2>Nuevo Cobro</h2>
     <form [formGroup]="cobroForm" (ngSubmit)="onSubmit()">
       <mat-form-field appearance="fill">
+        <mat-label>Miembro</mat-label>
+        <mat-select formControlName="miembro" required>
+          <!-- Aquí deberías cargar la lista de miembros desde tu backend -->
+          <mat-option *ngFor="let miembro of miembros" [value]="miembro.id">{{miembro.nombre}} {{miembro.apellidos}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="fill">
         <mat-label>Concepto</mat-label>
         <input matInput formControlName="concepto" required>
       </mat-form-field>
@@ -38,8 +45,8 @@ import { CobrosService } from '../services/cobros.service';
       <mat-form-field appearance="fill">
         <mat-label>Estado</mat-label>
         <mat-select formControlName="estado" required>
-          <mat-option value="Pendiente">Pendiente</mat-option>
-          <mat-option value="Pagado">Pagado</mat-option>
+          <mat-option value="PENDIENTE">Pendiente</mat-option>
+          <mat-option value="PAGADO">Pagado</mat-option>
         </mat-select>
       </mat-form-field>
       <button mat-raised-button color="primary" type="submit" [disabled]="!cobroForm.valid">Guardar</button>
@@ -67,6 +74,7 @@ import { CobrosService } from '../services/cobros.service';
 })
 export class CobroFormComponent implements OnInit {
   cobroForm: FormGroup;
+  miembros: any[] = []; // Lista de miembros
 
   constructor(
     private fb: FormBuilder,
@@ -75,14 +83,20 @@ export class CobroFormComponent implements OnInit {
     private dialogRef: MatDialogRef<CobroFormComponent>
   ) {
     this.cobroForm = this.fb.group({
+      miembro: ['', Validators.required],
       concepto: ['', Validators.required],
       importe: ['', [Validators.required, Validators.min(0)]],
       fecha: ['', Validators.required],
-      estado: ['Pendiente', Validators.required]
+      estado: ['PENDIENTE', Validators.required]
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Cargar la lista de miembros desde tu backend
+    this.cobrosService.getMiembros().subscribe((miembros) => {
+      this.miembros = miembros;
+    });
+  }
 
   onSubmit(): void {
     if (this.cobroForm.valid) {

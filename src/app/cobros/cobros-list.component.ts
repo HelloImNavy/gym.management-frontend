@@ -8,7 +8,6 @@ import { Cobro } from '../models/cobro.model';
 import { CobroFormComponent } from './cobros-form.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
-
 @Component({
   selector: 'app-cobros-list',
   standalone: true,
@@ -20,31 +19,35 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
         <button class="add-button" (click)="addCobro()">Nuevo Cobro</button>
       </div>
       <div class="filters">
-  <button class="add-button" (click)="loadCobrosPendientes()">Cobros Pendientes</button>
-</div>
-<table class="styled-table">
-  <thead>
-    <tr>
-      <th>Fecha</th>
-      <th>Nombre Socio</th>
-      <th>Concepto</th>
-      <th>Importe (€)</th>
-      <th>Estado</th>
-      <th>Fecha Pago</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let cobro of filteredCobros">
-      <td>{{ cobro.fecha | date: 'dd/MM/yyyy' }}</td>
-      <td>{{ cobro.miembro.nombre }} {{ cobro.miembro.apellidos }}</td>
-      <td>{{ cobro.concepto }}</td>
-      <td>{{ cobro.monto | currency: 'EUR':'symbol':'1.2-2' }}</td>
-      <td>{{ cobro.estado }}</td>
-      <td>{{ cobro.fechaPago ? (cobro.fechaPago | date: 'dd/MM/yyyy') : 'N/A' }}</td>
-    </tr>
-  </tbody>
-</table>
-
+        <input [(ngModel)]="searchTerm" placeholder="Buscar por nombre" (input)="filterCobros()" />
+        <input [(ngModel)]="startDate" type="date" placeholder="Fecha inicio" (change)="filterCobros()" />
+        <input [(ngModel)]="endDate" type="date" placeholder="Fecha fin" (change)="filterCobros()" />
+        <button class="add-button" (click)="loadCobrosPendientes()">
+          {{ showPendientes ? 'Mostrar Todos' : 'Cobros Pendientes' }}
+        </button>
+      </div>
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Nombre Socio</th>
+            <th>Concepto</th>
+            <th>Importe (€)</th>
+            <th>Estado</th>
+            <th>Fecha Pago</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cobro of filteredCobros">
+            <td>{{ cobro?.fecha | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ cobro?.miembro?.nombre }} {{ cobro?.miembro?.apellidos }}</td>
+            <td>{{ cobro?.concepto }}</td>
+            <td>{{ cobro?.monto | currency: 'EUR':'symbol':'1.2-2' }}</td>
+            <td>{{ cobro?.estado }}</td>
+            <td>{{ cobro?.fechaPago ? (cobro?.fechaPago | date: 'dd/MM/yyyy') : 'N/A' }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   `,
   styles: [
@@ -65,11 +68,10 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
       }
       .filters {
         display: flex;
-        justify-content: space-between;
+        gap: 10px;
         margin-bottom: 20px;
       }
       input {
-        margin-right: 10px;
         padding: 5px;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -122,10 +124,11 @@ export class CobrosListComponent implements OnInit {
   searchTerm: string = '';
   startDate: string = '';
   endDate: string = '';
-  cobros: any[] = [];
-  filteredCobros: any[] = [];
+  showPendientes: boolean = false;
+  cobros: Cobro[] = [];
+  filteredCobros: Cobro[] = [];
 
-  constructor(private cobrosService: CobrosService,private dialog: MatDialog) { }
+  constructor(private cobrosService: CobrosService, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.loadCobros();
@@ -136,7 +139,7 @@ export class CobrosListComponent implements OnInit {
       .pipe(
         tap((data: Cobro[]) => {
           this.cobros = data;
-          this.filteredCobros = data;
+          this.applyFilters();
         }),
         catchError((error: any) => {
           console.error('Error al cargar cobros:', error);
@@ -146,29 +149,26 @@ export class CobrosListComponent implements OnInit {
       .subscribe();
   }
 
+  applyFilters() {
+    this.filteredCobros = this.cobros.filter(cobro => {
+      const matchesSearchTerm = this.searchTerm
+        ? cobro.miembro?.nombre.includes(this.searchTerm) || cobro.miembro?.apellidos.includes(this.searchTerm)
+        : true;
+      const matchesStartDate = this.startDate ? new Date(cobro.fecha) >= new Date(this.startDate) : true;
+      const matchesEndDate = this.endDate ? new Date(cobro.fecha) <= new Date(this.endDate) : true;
+      const matchesPendientes = this.showPendientes ? cobro.estado === 'Pendiente' : true;
+
+      return matchesSearchTerm && matchesStartDate && matchesEndDate && matchesPendientes;
+    });
+  }
 
   filterCobros() {
-    const params = {
-      searchTerm: this.searchTerm,
-      startDate: this.startDate,
-      endDate: this.endDate,
-    };
-
-    this.cobrosService.filterCobros(params).subscribe(
-      (data) => {
-        this.filteredCobros = data;
-      },
-      (error) => console.error('Error al filtrar cobros:', error)
-    );
+    this.applyFilters();
   }
 
   loadCobrosPendientes() {
-    this.cobrosService.getCobrosPendientes().subscribe(
-      (data: Cobro[]) => {
-        this.filteredCobros = data;
-      },
-      (error) => console.error('Error al cargar cobros pendientes:', error)
-    );
+    this.showPendientes = !this.showPendientes;
+    this.applyFilters();
   }
 
   addCobro() {
@@ -178,7 +178,7 @@ export class CobrosListComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.loadCobros(); 
+        this.loadCobros();
       }
     });
   }

@@ -8,10 +8,8 @@ export interface Miembro {
   fechaAlta: string;
   fechaBaja?: string;
   observaciones: string;
-  actividades: any[];
+  inscripciones?: { actividad: { id: number }, fechaAlta: string }[];
 }
-
-
 export interface Inscripcion {
   actividadId: number; 
   fechaAlta: string;    

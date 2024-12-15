@@ -9,6 +9,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MiembroService } from '../services/miembro.service';
+import { Miembro } from '../models/miembro.model';
 
 @Component({
   selector: 'app-miembros-form',
@@ -141,9 +142,8 @@ export class MiembrosFormComponent implements OnInit {
   onSubmit(): void {
     if (this.miembroForm.valid) {
       const miembroData = this.miembroForm.value;
-      
-      // Crear el objeto miembro con los campos requeridos
-      const socioPayload = {
+  
+      const socioPayload: Miembro = {
         nombre: miembroData.nombre,
         apellidos: miembroData.apellidos,
         direccion: miembroData.direccion,
@@ -151,41 +151,27 @@ export class MiembrosFormComponent implements OnInit {
         fechaNacimiento: miembroData.fechaNacimiento,
         observaciones: miembroData.observaciones,
         fechaAlta: miembroData.fechaAlta,
-        actividades: [] 
+        inscripciones: miembroData.actividades.map((actividadId: number) => ({
+          actividad: { id: actividadId },
+          fechaAlta: miembroData.fechaAlta,
+        }))
       };
-    
+  
       // Crear el miembro
       this.miembroService.crearMiembro(socioPayload).subscribe({
         next: (response) => {
-          const socioId = response.id; // ID del nuevo miembro
-    
-          // Crear las inscripciones asociadas
-          const inscripciones = miembroData.actividades.map((actividadId: number) => ({
-            miembro: { id: socioId }, // Usamos el ID recién creado
-            actividad: { id: actividadId },
-            fechaAlta: miembroData.fechaAlta,
-          }));
-    
-          // Llama al servicio para crear las inscripciones
-          this.miembroService.crearInscripciones(inscripciones).subscribe({
-            next: () => {
-              this.snackBar.open('Socio e inscripciones añadidos con éxito.', 'Cerrar', { duration: 3000 });
-              this.dialogRef.close(true);
-            },
-            error: (err) => {
-              this.snackBar.open('Error al añadir inscripciones.', 'Cerrar', { duration: 3000 });
-              console.error(err);
-            },
-          });
+          this.snackBar.open('Socio creado con éxito', 'Cerrar', { duration: 3000 });
+          this.dialogRef.close(true);
         },
         error: (err) => {
-          this.snackBar.open('Error al añadir socio.', 'Cerrar', { duration: 3000 });
+          this.snackBar.open('Error al crear socio', 'Cerrar', { duration: 3000 });
           console.error(err);
-        },
+        }
       });
     }
   }
   
+ 
   
 
   onCancel(): void {

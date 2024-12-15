@@ -9,6 +9,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { Actividad } from '../models/actividad.model';
+
 
 @Component({
   selector: 'app-miembro-detail',
@@ -162,6 +164,17 @@ export class MiembroDetailComponent implements OnInit {
         console.error('Error al actualizar el miembro:', error); 
       });
     }
+  }
+
+  onDarDeBajaActividad(actividadId: number): void {
+    this.miembroService.darDeBajaActividad(this.data.id, actividadId).subscribe(() => {
+      this.data.actividades = this.data.actividades.filter((a: Actividad) => a.id !== actividadId);
+      if (this.data.actividades.length === 0) {
+        this.miembroService.actualizarMiembro(this.data.id, { ...this.data, fechaBaja: new Date() }).subscribe(() => {
+          this.dialogRef.close(true);
+        });
+      }
+    });
   }
   
 

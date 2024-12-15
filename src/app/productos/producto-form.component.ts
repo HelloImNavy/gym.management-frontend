@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ProductoService } from '../services/producto.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-producto-form',
@@ -18,10 +19,10 @@ import { ProductoService } from '../services/producto.service';
         MatInputModule,
         MatButtonModule,
         MatSelectModule,
-        MatSnackBarModule
+        MatSnackBarModule, 
+        FormsModule
     ],
     template: `
-<!-- producto-form.component.html -->
 <h2>{{ data ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
 <form [formGroup]="productoForm" (ngSubmit)="onSubmit()">
   <mat-form-field appearance="fill">
@@ -30,7 +31,7 @@ import { ProductoService } from '../services/producto.service';
   </mat-form-field>
   <mat-form-field appearance="fill">
     <mat-label>Precio (€)</mat-label>
-    <input matInput formControlName="precio" type="number" step="0.01" required>
+    <input matInput [(ngModel)]="precio" (input)="onPrecioInput($event)" required>
   </mat-form-field>
   <mat-form-field appearance="fill">
     <mat-label>Cantidad</mat-label>
@@ -39,9 +40,11 @@ import { ProductoService } from '../services/producto.service';
   <mat-form-field appearance="fill">
     <mat-label>Categoría</mat-label>
     <mat-select formControlName="categoria" required>
-      <mat-option value="Electrónica">Electrónica</mat-option>
+      <mat-option value="Electrónica">Suplementación</mat-option>
       <mat-option value="Ropa">Ropa</mat-option>
       <mat-option value="Alimentos">Alimentos</mat-option>
+      <mat-option value="Alimentos">Bebidas</mat-option>
+      <mat-option value="Alimentos">Accesorios</mat-option>
     </mat-select>
   </mat-form-field>
   <div class="form-actions">
@@ -49,19 +52,18 @@ import { ProductoService } from '../services/producto.service';
     <button mat-button color="warn" (click)="onCancel()">Cancelar</button>
   </div>
 </form>
-
   `,
     styles: [
-        `
-h2 { text-align: center; margin-bottom: 20px; } 
-form { display: flex; flex-direction: column; gap: 20px; } 
-.mat-form-field { width: 100%; } 
-.form-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        `h2 { text-align: center; margin-bottom: 20px; } 
+        form { display: flex; flex-direction: column; gap: 20px; } 
+        .mat-form-field { width: 100%; } 
+        .form-actions { display: flex; justify-content: flex-end; gap: 10px; }
     `
     ]
 })
 export class ProductoFormComponent implements OnInit {
     productoForm: FormGroup;
+    precio: string = ''; // Añadir variable para el precio
   
     constructor(
       private fb: FormBuilder,
@@ -107,7 +109,27 @@ export class ProductoFormComponent implements OnInit {
         }
       }
     }
-  
+
+    onPrecioInput(event: any): void {
+        let value = event.target.value;
+        
+        // Depuración: mostrar el valor
+        console.log('Valor del precio:', value);
+
+        // Reemplazar la coma por un punto para asegurarse de que se maneje correctamente
+        value = value.replace(',', '.');
+        
+        // Verificar si el valor es un número válido
+        if (!isNaN(parseFloat(value))) {
+          this.precio = value;  // Actualizar la variable precio
+          this.productoForm.controls['precio'].setValue(value);  // Actualizar el control de formulario
+        } else {
+          // Si el valor no es un número, borrar el campo o manejar el error
+          this.precio = '';  // Limpiar el valor
+          this.productoForm.controls['precio'].setValue('');  // Limpiar el campo
+        }
+    }
+
     onCancel(): void {
       this.dialogRef.close();
     }
