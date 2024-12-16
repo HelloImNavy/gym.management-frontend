@@ -9,7 +9,7 @@ import { CobrosListComponent } from './cobros/cobros-list.component';
 import { ActividadesListComponent } from './actividades/actividades-list.component';
 import { ActividadesEditComponent } from './actividades/actividades-edit.component';
 import { ProductoListComponent } from './productos/producto-list.component';
-
+import { PagosProductosComponent } from './productos/pagos-productos.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -23,12 +23,18 @@ export const routes: Routes = [
       { path: 'miembros', component: MiembroListaComponent },
       { path: 'miembros/nuevo', component: MiembrosFormComponent },
       { path: 'miembros/:id', component: MiembrosFormComponent },
-      { path: 'cobros', component: CobrosListComponent}, 
+      { path: 'cobros', component: CobrosListComponent }, 
       { path: 'actividades/nueva', component: ActividadFormComponent },
       { path: 'actividades/:id/editar', component: ActividadesEditComponent },
       { path: 'actividades', component: ActividadesListComponent },
-      { path: 'productos', component: ProductoListComponent },
-
+      {
+        path: 'productos',
+        children: [
+          { path: '', redirectTo: 'lista', pathMatch: 'full' },
+          { path: 'lista', component: ProductoListComponent },
+          { path: 'pagos', component: PagosProductosComponent }
+        ]
+      }
     ]
   }
 ];

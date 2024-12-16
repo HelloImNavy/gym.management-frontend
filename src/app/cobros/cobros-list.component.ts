@@ -4,129 +4,120 @@ import { FormsModule } from '@angular/forms';
 import { CobrosService } from '../services/cobros.service';
 import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { Cobro } from '../models/cobro.model';
+import { CobroDTO } from '../models/cobro.model';
 import { CobroFormComponent } from './cobros-form.component';
+import { EditCobroFormComponent } from './cobro-edit.component'; // Importar el componente de edición
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-cobros-list',
   standalone: true,
-  imports: [FormsModule, CommonModule, MatDialogModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatDialogModule,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    RouterModule
+  ],
   template: `
+    <h2>Listado de Cobros</h2>
+    <button mat-raised-button style="background-color: #333; color: white; float: right;" (click)="addCobro()">Nuevo Cobro</button>
+
     <div class="container">
-      <div class="header">
-        <h2>Listado de Cobros</h2>
-        <button class="add-button" (click)="addCobro()">Nuevo Cobro</button>
-      </div>
-      <div class="filters">
-        <input [(ngModel)]="searchTerm" placeholder="Buscar por nombre" (input)="filterCobros()" />
-        <input [(ngModel)]="startDate" type="date" placeholder="Fecha inicio" (change)="filterCobros()" />
-        <input [(ngModel)]="endDate" type="date" placeholder="Fecha fin" (change)="filterCobros()" />
-        <button class="add-button" (click)="loadCobrosPendientes()">
-          {{ showPendientes ? 'Mostrar Todos' : 'Cobros Pendientes' }}
-        </button>
-      </div>
-      <table class="styled-table">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Nombre Socio</th>
-            <th>Concepto</th>
-            <th>Importe (€)</th>
-            <th>Estado</th>
-            <th>Fecha Pago</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let cobro of filteredCobros">
-            <td>{{ cobro?.fecha | date: 'dd/MM/yyyy' }}</td>
-            <td>{{ cobro?.miembro?.nombre }} {{ cobro?.miembro?.apellidos }}</td>
-            <td>{{ cobro?.concepto }}</td>
-            <td>{{ cobro?.monto | currency: 'EUR':'symbol':'1.2-2' }}</td>
-            <td>{{ cobro?.estado }}</td>
-            <td>{{ cobro?.fechaPago ? (cobro?.fechaPago | date: 'dd/MM/yyyy') : 'N/A' }}</td>
-          </tr>
-        </tbody>
+      <table mat-table [dataSource]="filteredCobros" class="mat-elevation-z8">
+        
+        <ng-container matColumnDef="fecha">
+          <th mat-header-cell *matHeaderCellDef> Fecha </th>
+          <td mat-cell *matCellDef="let cobro"> {{ cobro.fecha | date: 'dd/MM/yyyy' }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="miembro">
+          <th mat-header-cell *matHeaderCellDef> Nombre Socio </th>
+          <td mat-cell *matCellDef="let cobro"> {{ cobro.miembroNombre }} {{ cobro.miembroApellidos }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="concepto">
+          <th mat-header-cell *matHeaderCellDef> Concepto </th>
+          <td mat-cell *matCellDef="let cobro"> {{ cobro.concepto }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="monto">
+          <th mat-header-cell *matHeaderCellDef> Importe (€) </th>
+          <td mat-cell *matCellDef="let cobro"> {{ cobro.monto | currency: 'EUR':'symbol':'1.2-2' }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef> Estado </th>
+          <td mat-cell *matCellDef="let cobro"> {{ cobro.estado }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="fechaPago">
+          <th mat-header-cell *matHeaderCellDef> Fecha Pago </th>
+          <td mat-cell *matCellDef="let cobro"> {{ cobro.fechaPago ? (cobro.fechaPago | date: 'dd/MM/yyyy') : 'N/A' }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef> Acciones </th>
+          <td mat-cell *matCellDef="let cobro">
+            <button mat-icon-button color="primary" (click)="editCobro(cobro)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="confirmDelete(cobro)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
     </div>
   `,
-  styles: [
-    `
-      .container {
-        padding: 20px;
-        max-width: 800px;
-        margin: 0 auto;
-      }
-      .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-      h2 {
-        color: #333;
-      }
-      .filters {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-      }
-      input {
-        padding: 5px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-      }
-      .styled-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 25px 0;
-        font-size: 0.9em;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        min-width: 400px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-        border-radius: 8px;
-        overflow: hidden;
-      }
-      .styled-table thead tr {
-        background-color: rgb(103, 77, 84);
-        color: #ffffff;
-        text-align: left;
-      }
-      .styled-table th,
-      .styled-table td {
-        padding: 12px 15px;
-      }
-      .styled-table tbody tr {
-        border-bottom: 1px solid #dddddd;
-      }
-      .styled-table tbody tr:nth-of-type(even) {
-        background-color: #f3f3f3;
-      }
-      .styled-table tbody tr:last-of-type {
-        border-bottom: 2px solid rgb(103, 77, 84);
-      }
-      .add-button {
-        background-color: rgb(103, 77, 84);
-        color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 10px 20px;
-        cursor: pointer;
-        font-size: 1em;
-      }
-      .add-button:hover {
-        background-color: rgb(103, 77, 84);
-      }
-    `
-  ]
+  styles: [`
+    .container {
+      padding: 20px;
+      /* max-width: 800px;*/
+      margin: 0 auto;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+    }
+    .mat-header-cell {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    .mat-cell {
+      text-align: center;
+    }
+    .mat-elevation-z8 {
+      border-radius: 8px;
+    }
+    button[mat-raised-button] {
+      margin-bottom: 20px;
+    }
+    .mat-icon-button {
+      margin: 0 5px;
+    }
+  `]
 })
 export class CobrosListComponent implements OnInit {
+  displayedColumns: string[] = ['fecha', 'miembro', 'concepto', 'monto', 'estado', 'fechaPago', 'acciones'];
   searchTerm: string = '';
   startDate: string = '';
   endDate: string = '';
-  showPendientes: boolean = false;
-  cobros: Cobro[] = [];
-  filteredCobros: Cobro[] = [];
+  showPendingOnly: boolean = false;
+  cobros: CobroDTO[] = [];
+  filteredCobros: CobroDTO[] = [];
 
   constructor(private cobrosService: CobrosService, private dialog: MatDialog) {}
 
@@ -137,9 +128,10 @@ export class CobrosListComponent implements OnInit {
   loadCobros() {
     this.cobrosService.getCobros()
       .pipe(
-        tap((data: Cobro[]) => {
+        tap((data: CobroDTO[]) => {
+          console.log('Datos de cobros obtenidos en el componente:', data);
           this.cobros = data;
-          this.applyFilters();
+          this.filteredCobros = data;
         }),
         catchError((error: any) => {
           console.error('Error al cargar cobros:', error);
@@ -149,26 +141,16 @@ export class CobrosListComponent implements OnInit {
       .subscribe();
   }
 
-  applyFilters() {
-    this.filteredCobros = this.cobros.filter(cobro => {
-      const matchesSearchTerm = this.searchTerm
-        ? cobro.miembro?.nombre.includes(this.searchTerm) || cobro.miembro?.apellidos.includes(this.searchTerm)
-        : true;
-      const matchesStartDate = this.startDate ? new Date(cobro.fecha) >= new Date(this.startDate) : true;
-      const matchesEndDate = this.endDate ? new Date(cobro.fecha) <= new Date(this.endDate) : true;
-      const matchesPendientes = this.showPendientes ? cobro.estado === 'Pendiente' : true;
-
-      return matchesSearchTerm && matchesStartDate && matchesEndDate && matchesPendientes;
-    });
-  }
-
   filterCobros() {
-    this.applyFilters();
-  }
+    this.filteredCobros = this.cobros.filter(cobro => {
+      const matchesSearchTerm = (cobro.miembroNombre.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                                 cobro.miembroApellidos.toLowerCase().includes(this.searchTerm.toLowerCase()));
+      const matchesPendingStatus = !this.showPendingOnly || cobro.estado === 'PENDIENTE';
+      const matchesStartDate = !this.startDate || new Date(cobro.fecha) >= new Date(this.startDate);
+      const matchesEndDate = !this.endDate || new Date(cobro.fecha) <= new Date(this.endDate);
 
-  loadCobrosPendientes() {
-    this.showPendientes = !this.showPendientes;
-    this.applyFilters();
+      return matchesSearchTerm && matchesPendingStatus && matchesStartDate && matchesEndDate;
+    });
   }
 
   addCobro() {
@@ -178,8 +160,33 @@ export class CobrosListComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        this.loadCobros(); 
+      }
+    });
+  }
+
+  editCobro(cobro: CobroDTO) {
+    const dialogRef = this.dialog.open(EditCobroFormComponent, { // Cambiar aquí al componente EditCobroFormComponent
+      width: '400px',
+      data: { cobro } // Asegurarse de pasar los datos correctamente
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
         this.loadCobros();
       }
+    });
+  }
+
+  confirmDelete(cobro: CobroDTO) {
+    if (confirm('¿Estás seguro de que deseas eliminar este cobro?')) {
+      this.deleteCobro(cobro.id);
+    }
+  }
+
+  deleteCobro(cobroId: number) {
+    this.cobrosService.deleteCobro(cobroId).subscribe(() => {
+      this.loadCobros();
     });
   }
 }

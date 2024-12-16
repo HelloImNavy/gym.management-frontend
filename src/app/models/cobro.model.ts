@@ -1,14 +1,11 @@
-export interface Cobro {
-    id: number; 
-    miembro: {
-      id: number; 
-      nombre: string;
-      apellidos: string;
-    };
-    concepto: string; 
+export interface CobroDTO {
+    id: number;
+    concepto: string;
     fecha: string;
-    estado: string; 
+    estado: string;
     monto: number;
-    fechaPago?: string; 
+    fechaPago?: string;
+    miembroNombre: string;
+    miembroApellidos: string;
   }
   

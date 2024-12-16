@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { PagoProducto } from '../models/pago-producto.model';
 
 @Injectable({
   providedIn: 'root'
@@ -32,4 +33,8 @@ export class ProductoService {
     if (categoria) params.categoria = categoria;
     return this.http.get<any[]>(`${this.apiUrl}/buscar`, { params });
   }
+
+  registrarPago(pago: PagoProducto): Observable<PagoProducto> { 
+    return this.http.post<PagoProducto>(`${this.apiUrl}/pagos`, pago); }
+
 }

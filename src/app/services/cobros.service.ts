@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Cobro } from '../models/cobro.model'; 
+import { CobroDTO } from '../models/cobro.model'; 
 
 @Injectable({
   providedIn: 'root', 
@@ -11,20 +11,20 @@ export class CobrosService {
 
   constructor(private http: HttpClient) {}
 
-  getCobros(): Observable<Cobro[]> {
-    return this.http.get<Cobro[]>(this.apiUrl);
+  getCobros(): Observable<CobroDTO[]> {
+    return this.http.get<CobroDTO[]>(this.apiUrl);
   }
   
-  addCobro(cobro: Cobro): Observable<Cobro> {
-    return this.http.post<Cobro>(this.apiUrl, cobro);
+  addCobro(cobro: CobroDTO): Observable<CobroDTO> {
+    return this.http.post<CobroDTO>(this.apiUrl, cobro);
   }
 
-  filterCobros(params: any): Observable<Cobro[]> {
-    return this.http.get<Cobro[]>(`${this.apiUrl}`, { params });
+  filterCobros(params: any): Observable<CobroDTO[]> {
+    return this.http.get<CobroDTO[]>(`${this.apiUrl}`, { params });
   }
 
-  getCobrosPendientes(): Observable<Cobro[]> {
-    return this.http.get<Cobro[]>(`${this.apiUrl}/pendientes`);
+  getCobrosPendientes(): Observable<CobroDTO[]> {
+    return this.http.get<CobroDTO[]>(`${this.apiUrl}/pendientes`);
   }
 
   getMiembros(): Observable<any[]> {
@@ -33,5 +33,13 @@ export class CobrosService {
 
   pagarCobro(cobroId: number): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${cobroId}/pagar`, {});
+  }
+
+  updateCobro(cobroId: number, cobro: CobroDTO): Observable<CobroDTO> {
+    return this.http.put<CobroDTO>(`${this.apiUrl}/${cobroId}`, cobro);
+  } 
+    
+  deleteCobro(cobroId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${cobroId}`);
   }
 }
