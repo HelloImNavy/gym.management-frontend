@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Miembro } from '../models/miembro.model';
+import { Actividad } from '../models/actividad.model';
 
 @Injectable({
   providedIn: 'root'
@@ -27,32 +28,32 @@ export class MiembroService {
   }
 
   actualizarMiembro(id: number, miembro: Miembro): Observable<Miembro> {
-    return this.http.put<Miembro>(`${this.apiUrl}/${id}`, miembro);
+    return this.http.put<Miembro>(`${this.apiUrl}/actualizar/${id}`, miembro);
   }
   
   getDetallesMiembro(id: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/${id}`);
-  }
-  
+  }  
 
   eliminarMiembro(id: number): Observable<string> {
     return this.http.delete<string>(`${this.apiUrl}/${id}`, { responseType: 'text' as 'json' });
   }
 
-  obtenerActividades(): Observable<any[]> {
-    return this.http.get<any[]>(this.actividadesUrl);
+  obtenerActividades(): Observable<Actividad[]> {
+    return this.http.get<Actividad[]>(this.actividadesUrl);
   }
 
   darDeBajaMiembro(id: number, fechaBaja: string): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${id}/dar-de-baja`, { fechaBaja });
+    return this.http.put<void>(`${this.apiUrl}/${id}/baja`, { fechaBaja });
   }
+  
 
-  getActividadesInscritas(idMiembro: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.inscripcionesUrl}/actividades/${idMiembro}`);
+  getActividadesInscritas(idMiembro: number): Observable<Actividad[]> {
+    return this.http.get<Actividad[]>(`${this.inscripcionesUrl}/actividades/${idMiembro}`);
   }
 
   getCobros(idMiembro: number, ano: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.cobrosUrl}/cobros/${idMiembro}?ano=${ano}`);
+    return this.http.get<any[]>(`${this.cobrosUrl}/cobros/${idMiembro}`);
   }
 
   crearInscripciones(inscripciones: any[]): Observable<any> {
@@ -70,10 +71,14 @@ export class MiembroService {
   }
 
   darDeBajaActividad(miembroId: number, actividadId: number): Observable<void> {
-      return this.http.put<void>(`${this.apiUrl}/${miembroId}/baja?actividadId=${actividadId}`, {});
+    return this.http.put<void>(`${this.apiUrl}/${miembroId}/baja?actividadId=${actividadId}`, {});
   }
-  
-  
+
+  inscribirEnActividad(miembroId: number, actividadId: number): Observable<void> {
+    return this.http.post<void>(`${this.inscripcionesUrl}`, { miembroId, actividadId });
+  }
+
+  getActividadesDisponibles(): Observable<Actividad[]> {
+    return this.http.get<Actividad[]>(`${this.actividadesUrl}/disponibles`);
+  }
 }
-
-

@@ -166,9 +166,9 @@ export class CobrosListComponent implements OnInit {
   }
 
   editCobro(cobro: CobroDTO) {
-    const dialogRef = this.dialog.open(EditCobroFormComponent, { // Cambiar aquí al componente EditCobroFormComponent
+    const dialogRef = this.dialog.open(EditCobroFormComponent, {
       width: '400px',
-      data: { cobro } // Asegurarse de pasar los datos correctamente
+      data: { cobro } 
     });
 
     dialogRef.afterClosed().subscribe(result => {

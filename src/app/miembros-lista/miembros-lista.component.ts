@@ -10,11 +10,16 @@ import { MiembrosFormComponent } from '../miembros-form/miembros-form.component'
 import { MiembroDetailComponent } from '../miembros/miembros-details.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
+import { MatInputModule } from '@angular/material/input'; 
+import { MatSelectModule } from '@angular/material/select'; 
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-miembros-lista',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, RouterModule, MatDialogModule],
+  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, RouterModule, MatDialogModule, MatFormFieldModule, FormsModule, MatInputModule, MatSelectModule, FormsModule],
   template: `
     <h2>SOCIOS</h2>
     <button mat-raised-button 
@@ -23,8 +28,24 @@ import { MatDialogModule } from '@angular/material/dialog';
       Nuevo miembro
     </button>
 
+    <div class="filter-container">
+  <mat-form-field appearance="fill" class="filter-field">
+    <mat-label>Filtrar por Nombre o Apellidos</mat-label>
+    <input matInput (keyup)="aplicarFiltros()" [(ngModel)]="filterValue" placeholder="Escriba un nombre o apellido">
+  </mat-form-field>
+
+  <mat-form-field appearance="fill" class="filter-field">
+    <mat-label>Filtrar por</mat-label>
+    <mat-select [(ngModel)]="statusFilter" (selectionChange)="aplicarFiltros()">
+      <mat-option value="all">Todos</mat-option>
+      <mat-option value="active">Activos</mat-option>
+      <mat-option value="inactive">Inactivos</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+
     <div class="container">
-      <table mat-table [dataSource]="miembros" class="mat-elevation-z8">
+    <table mat-table [dataSource]="filteredMiembros" class="mat-elevation-z8">
         <ng-container matColumnDef="nombre">
           <th mat-header-cell *matHeaderCellDef>Nombre</th>
           <td mat-cell *matCellDef="let miembro">{{ miembro.nombre }}</td>
@@ -73,24 +94,53 @@ import { MatDialogModule } from '@angular/material/dialog';
     button[mat-raised-button] {
       margin-bottom: 20px;
     }
-  `]
+  `],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class MiembroListaComponent implements OnInit {
   miembros: Miembro[] = [];
   columnas: string[] = ['nombre', 'apellidos', 'fechaAlta', 'fechaBaja', 'acciones'];
+  filterValue: string = '';
+  statusFilter: string = 'all';
+  filteredMiembros: Miembro[] = []; 
 
   constructor(private miembroService: MiembroService, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.cargarMiembros();
   }
-
+  
   cargarMiembros(): void {
     this.miembroService.getMiembros()
       .subscribe(miembros => {
         this.miembros = miembros;
+        this.aplicarFiltros(); 
       });
   }
+
+  aplicarFiltros(): void {
+    let filtered = this.miembros;
+  
+    // Filtrar por nombre o apellidos
+    if (this.filterValue) {
+      filtered = filtered.filter(miembro =>
+        miembro.nombre.toLowerCase().includes(this.filterValue.toLowerCase()) ||
+        miembro.apellidos.toLowerCase().includes(this.filterValue.toLowerCase())
+      );
+    }
+  
+    // Filtrar por estado (activo o inactivo)
+    if (this.statusFilter === 'active') {
+      filtered = filtered.filter(miembro => !miembro.fechaBaja); // Activos
+    } else if (this.statusFilter === 'inactive') {
+      filtered = filtered.filter(miembro => miembro.fechaBaja); // Inactivos
+    }
+  
+    // Si el filtro es "Todos", no se aplica ningún filtro de estado
+    this.filteredMiembros = filtered;  // Usar filteredMiembros para la tabla
+  }
+  
+  
 
   eliminarMiembro(id: number | undefined): void {
     if (id && confirm('¿Está seguro de eliminar este miembro?')) {
@@ -119,7 +169,7 @@ export class MiembroListaComponent implements OnInit {
 
   abrirDetallesMiembro(miembro: Miembro): void {
     const dialogRef = this.dialog.open(MiembroDetailComponent, {
-      width: '600px',
+      width: '1000px',
       data: miembro, 
     });
   

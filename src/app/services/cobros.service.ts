@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CobroDTO } from '../models/cobro.model'; 
 
+
 @Injectable({
   providedIn: 'root', 
 })
@@ -42,4 +43,9 @@ export class CobrosService {
   deleteCobro(cobroId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${cobroId}`);
   }
+
+  getCobrosPorMiembro(miembroId: number): Observable<CobroDTO[]> { 
+    return this.http.get<CobroDTO[]>(`${this.apiUrl}/miembro/${miembroId}`); }
+
+
 }
