@@ -9,7 +9,7 @@ import { CobrosListComponent } from './cobros/cobros-list.component';
 import { ActividadesListComponent } from './actividades/actividades-list.component';
 import { ActividadesEditComponent } from './actividades/actividades-edit.component';
 import { ProductoListComponent } from './productos/producto-list.component';
-import { PagosProductosComponent } from './productos/pagos-productos.component';
+import { PagosListaComponent } from './productos/pagos-lista.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -32,7 +32,7 @@ export const routes: Routes = [
         children: [
           { path: '', redirectTo: 'lista', pathMatch: 'full' },
           { path: 'lista', component: ProductoListComponent },
-          { path: 'pagos', component: PagosProductosComponent }
+          { path: 'pagos', component: PagosListaComponent }
         ]
       }
     ]

@@ -1,7 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { tap } from 'rxjs/operators';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MiembroService } from '../services/miembro.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -14,6 +13,7 @@ import { Actividad } from '../models/actividad.model';
 import { CobroDTO } from '../models/cobro.model';
 import { CobrosService } from '../services/cobros.service';
 import { Mes } from '../models/mes.model';
+import { Inscripcion } from '../models/inscripcion.model';
 
 @Component({
   selector: 'app-miembro-detail',
@@ -26,7 +26,8 @@ import { Mes } from '../models/mes.model';
     MatSelectModule,
     MatSnackBarModule,
     ReactiveFormsModule,
-    MatIconModule
+    MatIconModule,
+    FormsModule
   ],
   template: `
 <form [formGroup]="miembroForm" (ngSubmit)="onSave()" class="form-container">
@@ -69,19 +70,17 @@ import { Mes } from '../models/mes.model';
       </mat-form-field>
 
       <div class="baja-section">
-  <mat-form-field appearance="fill" class="compact-field baja-field">
-    <mat-label>Fecha de Baja</mat-label>
-    <input matInput formControlName="fechaBaja" type="date" [disabled]="!isConfirmingBaja" />
-  </mat-form-field>
-  <button mat-raised-button color="warn" *ngIf="!isConfirmingBaja" (click)="toggleConfirmBaja()">
-    Dar de Baja
-  </button>
-  <button mat-raised-button color="primary" *ngIf="isConfirmingBaja" (click)="confirmBaja()">
-    Confirmar
-  </button>
-</div>
-
-
+        <mat-form-field appearance="fill" class="compact-field baja-field">
+          <mat-label>Fecha de Baja</mat-label>
+          <input matInput formControlName="fechaBaja" type="date" [disabled]="!isConfirmingBaja" />
+        </mat-form-field>
+        <button mat-raised-button color="warn" *ngIf="!isConfirmingBaja" (click)="toggleConfirmBaja()">
+          Dar de Baja
+        </button>
+        <button mat-raised-button color="primary" *ngIf="isConfirmingBaja" (click)="confirmBaja()">
+          Confirmar
+        </button>
+      </div>
     </div>
 
     <!-- Columna de actividades y cobros -->
@@ -90,16 +89,16 @@ import { Mes } from '../models/mes.model';
       <section class="activities-section">
         <h3>Actividades</h3>
         <ul>
-          <li *ngFor="let actividad of data.actividades">
-            <span>{{ actividad.nombre }}</span>
-            <button mat-icon-button color="warn" (click)="onDarDeBajaActividad(actividad.id)">
-              <mat-icon>delete</mat-icon>
+          <li *ngFor="let inscripcion of data.inscripciones">
+            <span>{{ inscripcion.actividad?.nombre }}</span> <!-- El operador ?. manejará el caso de null -->
+            <button mat-icon-button color="warn" matTooltip="Dar de baja de esta actividad" (click)="onDarDeBajaActividad(inscripcion.id)">
+              <mat-icon>close</mat-icon>
             </button>
           </li>
         </ul>
         <mat-form-field appearance="fill" class="compact-field">
           <mat-label>Agregar Nueva Actividad</mat-label>
-          <mat-select [(value)]="selectedActividadId">
+          <mat-select formControlName="selectedActividadId" placeholder="Selecciona una actividad">
             <mat-option *ngFor="let actividad of availableActividades" [value]="actividad.id">
               {{ actividad.nombre }}
             </mat-option>
@@ -112,18 +111,18 @@ import { Mes } from '../models/mes.model';
       <section class="payments-section">
         <h3>Pagos</h3>
         <div class="months">
-        <div *ngFor="let month of data.months" class="month">
-  <div class="month-info">
-    <mat-icon [ngClass]="{ 'completed': month.completed, 'pending': !month.completed }" class="month-icon">
-      {{ month.completed ? 'check_circle' : 'cancel' }}
-    </mat-icon>
-    <div>{{ month.nombre }}</div>
-  </div>
-  <div *ngIf="month.fechaPago" class="payment-date">
-    Fecha de pago:{{ month.fechaPago | date: 'dd/MM/yyyy' }}
-  </div>
-</div>
-
+          <div *ngFor="let month of data.months" class="month" 
+              [ngClass]="{ 'completed': month.completed, 'pending': !month.completed && month.fechaPago, 'no-payment': !month.fechaPago && !month.completed }">
+            <div class="month-info">
+              <mat-icon class="month-icon">
+                {{ month.completed ? 'check_circle' : (!month.fechaPago ? 'remove_circle_outline' : 'cancel') }}
+              </mat-icon>
+              <div>{{ month.nombre }}</div>
+            </div>
+            <div *ngIf="month.fechaPago" class="payment-date">
+              Fecha de pago: {{ month.fechaPago | date: 'dd/MM/yyyy' }}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -148,11 +147,11 @@ import { Mes } from '../models/mes.model';
     }
 
     .form-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      padding: 10px;
-    }
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 10px;
+}
 
     .form-body {
       display: flex;
@@ -179,46 +178,74 @@ import { Mes } from '../models/mes.model';
       width: 100%;
     }
 
-    .activities-section, .payments-section {
+    .payments-section {
       margin-top: 30px;
     }
 
+    .activities-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.activities-section li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.activities-section mat-icon {
+  cursor: pointer;
+  color: red; 
+}
+
+.activities-section button[mat-icon-button] {
+  margin-left: 10px;
+}
+
+
     .months {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
 
-    .month {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      width: calc(50% - 15px);
-      text-align: left;
-    }
+.month {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: calc(50% - 15px);
+  text-align: left;
+}
 
-    .month-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+.month-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-    .month-icon {
-      font-size: 16px;
-    }
+.month-icon {
+  font-size: 16px;
+}
 
-    .completed {
-      color: green;
-    }
+.completed {
+  color: green;
+}
 
-    .pending {
-      color: red;
-    }
+.pending {
+  color: red;
+}
 
-    .payment-date {
-      font-size: 12px;
-      color: #888;
-    }
+/* Nueva clase para meses sin pagos */
+.no-payment {
+  color: gray;
+}
+
+.payment-date {
+  font-size: 12px;
+  color: #888;
+}
+
 
     button.mat-raised-button {
       margin-top: 10px;
@@ -284,7 +311,8 @@ export class MiembroDetailComponent implements OnInit {
       telefono: [{ value: data?.telefono || '', disabled: true }, Validators.required],
       observaciones: [{ value: data?.observaciones || '', disabled: true }],
       fechaAlta: [{ value: data?.fechaAlta || '', disabled: true }, Validators.required],
-      fechaBaja: [{ value: data?.fechaBaja || null, disabled: true }]
+      fechaBaja: [{ value: data?.fechaBaja || null, disabled: true }],
+      selectedActividadId: [null]
     });
   }
 
@@ -295,11 +323,38 @@ export class MiembroDetailComponent implements OnInit {
   }
 
   loadMemberDetails(): void {
-    this.miembroService.getDetallesMiembro(this.data.id).subscribe((detalles) => {
+    this.miembroService.getDetallesMiembro(this.data.id).subscribe((detalles: any) => {
+      console.log("Detalles del miembro recibidos:", detalles);
       this.data.actividades = detalles.actividades || [];
+      console.log("Actividades recibidas:", this.data.actividades);
+      this.data.inscripciones = detalles.inscripciones || [];
+      console.log("Inscripciones recibidas:", this.data.inscripciones);
+  
+      // Verificar que cada inscripción tiene un actividadId
+      this.data.inscripciones.forEach((inscripcion: Inscripcion) => {
+        console.log(`Inscripción ID: ${inscripcion.id}, Actividad ID: ${inscripcion.actividadId}`);
+      });
+  
+      // Vincular inscripciones con actividades correspondientes usando actividadId
+      this.data.inscripciones = this.data.inscripciones.map((inscripcion: Inscripcion) => {
+        const actividad = this.data.actividades.find((a: Actividad) => a.id === inscripcion.actividadId);
+        if (actividad) {
+          console.log(`Vinculando actividad ${actividad.nombre} (ID: ${actividad.id}) con inscripción ${inscripcion.id}`);
+          return { ...inscripcion, actividad }; // Crea un nuevo objeto que incluye la actividad
+        } else {
+          console.warn(`No se encontró actividad para la inscripción ${inscripcion.id} con actividadId ${inscripcion.actividadId}`);
+          return { ...inscripcion, actividad: null }; // Maneja la inscripción sin actividad
+        }
+      });
+  
+      console.log("Inscripciones después de vincular actividades:", this.data.inscripciones);
       this.calculatePaymentsStatus();
+    }, error => {
+      console.error("Error al cargar los detalles del miembro:", error);
     });
   }
+  
+
 
   loadAvailableActividades(): void {
     this.miembroService.getActividadesDisponibles().subscribe((actividades: Actividad[]) => {
@@ -366,13 +421,13 @@ export class MiembroDetailComponent implements OnInit {
   }
 
   onSave(): void {
-    console.log(this.miembroForm.value); 
+    console.log(this.miembroForm.value);
     if (this.miembroForm.invalid) {
       return;
     }
-  
+
     const updatedData = { ...this.data, ...this.miembroForm.value };
-  
+
     this.miembroService.actualizarMiembro(this.data.id, updatedData).subscribe({
       next: () => {
         // Actualizar los datos del miembro en la vista sin cerrar el popup
@@ -406,7 +461,7 @@ export class MiembroDetailComponent implements OnInit {
           formControl.enable();
         }
       });
-      this.miembroForm.get('fechaBaja')?.disable(); // Asegúrate de que fechaBaja esté deshabilitado
+      this.miembroForm.get('fechaBaja')?.disable();
     } else {
       Object.keys(this.miembroForm.controls).forEach(control => {
         const formControl = this.miembroForm.get(control);
@@ -426,15 +481,15 @@ export class MiembroDetailComponent implements OnInit {
       this.miembroForm.get('fechaBaja')?.disable();
     }
   }
-  
+
   confirmBaja(): void {
     if (this.isConfirmingBaja && this.miembroForm.get('fechaBaja')?.value) {
       const fechaBaja = this.miembroForm.get('fechaBaja')?.value;
-      const formattedFechaBaja = new Date(fechaBaja).toISOString().split('T')[0]; 
-      
+      const formattedFechaBaja = new Date(fechaBaja).toISOString().split('T')[0];
+
       this.miembroService.darDeBajaMiembro(this.data.id, formattedFechaBaja).subscribe({
         next: () => {
-          this.data.fechaBaja = formattedFechaBaja; 
+          this.data.fechaBaja = formattedFechaBaja;
           this.miembroForm.get('fechaBaja')?.disable();
           this.isConfirmingBaja = false;
           console.log('Miembro dado de baja');
@@ -445,17 +500,19 @@ export class MiembroDetailComponent implements OnInit {
       });
     }
   }
-  
+
 
   onAgregarActividad(): void {
     if (!this.selectedActividadId) {
       return;
     }
+
     const actividadSeleccionada = this.availableActividades.find(a => a.id === this.selectedActividadId);
     if (!actividadSeleccionada) return;
 
     this.miembroService.inscribirEnActividad(this.data.id, this.selectedActividadId).subscribe(() => {
       this.data.actividades.push(actividadSeleccionada);
+
       this.cobrosService.addCobro({
         id: 0,
         miembroNombre: this.data.nombre,
@@ -470,14 +527,40 @@ export class MiembroDetailComponent implements OnInit {
     });
   }
 
-  onDarDeBajaActividad(actividadId: number): void {
-    this.miembroService.darDeBajaActividad(this.data.id, actividadId).subscribe(() => {
-      this.data.actividades = this.data.actividades.filter((a: Actividad) => a.id !== actividadId);
-      if (this.data.actividades.length === 0) {
-        this.miembroService.actualizarMiembro(this.data.id, { ...this.data, fechaBaja: new Date() }).subscribe(() => {
-          this.dialogRef.close(true);
-        });
-      }
-    });
+  confirmDarDeBajaActividad(actividadId: number): void {
+    if (confirm("¿Confirma que desea dar de baja al miembro de esta actividad?")) {
+      this.onDarDeBajaActividad(actividadId);
+    }
   }
-}
+
+
+  onDarDeBajaActividad(idInscripcion: number): void {
+    if (idInscripcion == null) {
+      console.error("ID de inscripción es nulo o indefinido.");
+      return;
+    }
+  
+    const fechaBaja = new Date().toISOString().split('T')[0];  // Fecha actual en formato 'YYYY-MM-DD'
+    console.log(`Dando de baja inscripción con ID: ${idInscripcion} y fecha de baja: ${fechaBaja}`);
+  
+    this.miembroService.darDeBajaInscripcion(idInscripcion, fechaBaja).subscribe(
+      () => {
+        // Filtrar la inscripción dada de baja de la lista
+        this.data.inscripciones = this.data.inscripciones.filter((i: Inscripcion) => i.id !== idInscripcion);
+        console.log(`Inscripción con ID ${idInscripcion} dada de baja.`);
+      },
+      (error) => {
+        if (error.status === 400) {
+          // Error de validación (por ejemplo, fecha de baja futura o inscripción ya dada de baja)
+          console.error('Error de validación al dar de baja la inscripción:', error.error);
+          alert(`Error: ${error.error}`);  // Mostrar mensaje de error al usuario
+        } else {
+          console.error('Error al dar de baja la inscripción:', error);
+        }
+      }
+    );
+  }
+  
+  
+  
+}  

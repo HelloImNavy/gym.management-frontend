@@ -8,8 +8,14 @@ import { PagoProducto } from '../models/pago-producto.model';
 })
 export class ProductoService {
   private apiUrl = 'http://localhost:8080/productos';
+  private pagosProductosUrl = 'http://localhost:8080/productos/pagos'; // URL para pagos
 
   constructor(private http: HttpClient) {}
+
+  // Método para obtener los pagos
+  getPagos(): Observable<PagoProducto[]> {
+    return this.http.get<PagoProducto[]>(this.pagosProductosUrl); // Devuelve un array de CobroProducto
+  }
 
   getProductos(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);

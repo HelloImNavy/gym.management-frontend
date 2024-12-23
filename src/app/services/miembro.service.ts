@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Miembro } from '../models/miembro.model';
 import { Actividad } from '../models/actividad.model';
+import { HttpParams } from '@angular/common/http'
 
 @Injectable({
   providedIn: 'root'
@@ -46,10 +47,9 @@ export class MiembroService {
   darDeBajaMiembro(id: number, fechaBaja: string): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${id}/baja`, { fechaBaja });
   }
-  
 
-  getActividadesInscritas(idMiembro: number): Observable<Actividad[]> {
-    return this.http.get<Actividad[]>(`${this.inscripcionesUrl}/actividades/${idMiembro}`);
+  getInscripcionesByMiembroId(miembroId: number): Observable<any> {
+    return this.http.get(`${this.inscripcionesUrl}/buscar?miembroId=${miembroId}`);
   }
 
   getCobros(idMiembro: number, ano: number): Observable<any[]> {
@@ -70,15 +70,19 @@ export class MiembroService {
     return this.http.get<{ fechaAlta: string; fechaBaja?: string }[]>(`${this.inscripcionesUrl}/historial/${idMiembro}`);
   }
 
-  darDeBajaActividad(miembroId: number, actividadId: number): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${miembroId}/baja?actividadId=${actividadId}`, {});
+  darDeBajaInscripcion(idInscripcion: number, fechaBaja: string): Observable<void> {
+    const url = `${this.inscripcionesUrl}/baja/${idInscripcion}`;
+    const params = new HttpParams().set('fechaBaja', fechaBaja);
+    console.log(`Solicitud PUT a: ${url} con fechaBaja: ${fechaBaja}`); // Añade un log para verificar la solicitud
+    return this.http.put<void>(url, {}, { params });
   }
-
+  
   inscribirEnActividad(miembroId: number, actividadId: number): Observable<void> {
-    return this.http.post<void>(`${this.inscripcionesUrl}`, { miembroId, actividadId });
+    return this.http.post<void>(`${this.inscripcionesUrl}`, [{ idMiembro: miembroId, idActividad: actividadId, fechaAlta: new Date().toISOString().split('T')[0] }]);
   }
 
   getActividadesDisponibles(): Observable<Actividad[]> {
     return this.http.get<Actividad[]>(`${this.actividadesUrl}/disponibles`);
-  }
+  } 
+  
 }

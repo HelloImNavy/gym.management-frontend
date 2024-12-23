@@ -23,84 +23,139 @@ import { AuthService } from '../auth/auth.service';
     MatExpansionModule
   ],
   template: `
-    <mat-toolbar style="background-color: #4f082d; color: white; display: flex; justify-content: space-between; align-items: center;">
-      <span class="titulo">ADMINISTRACIÓN GIMNASIO</span>
-      <button mat-icon-button (click)="logout()">
-        <mat-icon>logout</mat-icon>
-      </button>
-    </mat-toolbar>
+<mat-toolbar style="background-color: #4f082d; color: white; display: flex; justify-content: space-between; align-items: center;">
+  <span class="titulo">ADMINISTRACIÓN GIMNASIO</span>
+  <button mat-icon-button (click)="logout()">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>
 
-    <mat-sidenav-container>
-      <mat-sidenav mode="side" opened>
-        <mat-nav-list>
-          <a mat-list-item routerLink="/dashboard/miembros" routerLinkActive="active">
-            <i matListItemIcon class="material-icons">emoji_people</i>
-            <span matListItemTitle class="letras">SOCIOS</span>
+<mat-sidenav-container>
+  <mat-sidenav mode="side" opened>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/dashboard/miembros" routerLinkActive="active">
+        <mat-icon matListItemIcon>emoji_people</mat-icon>
+        <span matListItemTitle class="letras">SOCIOS</span>
+      </a>
+      <a mat-list-item routerLink="/dashboard/actividades" routerLinkActive="active">
+        <mat-icon matListItemIcon>fitness_center</mat-icon>
+        <span matListItemTitle class="letras">ACTIVIDADES</span>
+      </a>
+      <a mat-list-item routerLink="/dashboard/cobros" routerLinkActive="active">
+        <mat-icon matListItemIcon>payments</mat-icon>
+        <span matListItemTitle class="letras">COBROS</span>
+      </a>
+      <a mat-list-item class="expandable" (click)="expandPanel()" [attr.aria-expanded]="isExpanded">
+        <mat-icon matListItemIcon>shopping_cart</mat-icon>
+        <span matListItemTitle class="letras">PRODUCTOS</span>
+      </a>
+      <mat-expansion-panel *ngIf="isExpanded" class="expansion-panel" [expanded]="true">
+        <div class="submenu">
+          <a mat-list-item routerLink="/dashboard/productos/lista" routerLinkActive="active">
+            <mat-icon matListItemIcon>inventory</mat-icon>
+            <span class="submenu-letras">Stock</span>
           </a>
-          <a mat-list-item routerLink="/dashboard/actividades" routerLinkActive="active">
-            <mat-icon matListItemIcon>fitness_center</mat-icon>
-            <span matListItemTitle class="letras">ACTIVIDADES</span>
+          <a mat-list-item routerLink="/dashboard/productos/pagos" routerLinkActive="active">
+            <mat-icon matListItemIcon>payment</mat-icon>
+            <span class="submenu-letras">Cobros</span>
           </a>
-          <a mat-list-item routerLink="/dashboard/cobros" routerLinkActive="active">
-            <mat-icon matListItemIcon>payments</mat-icon>
-            <span matListItemTitle class="letras">COBROS</span>
-          </a>
-          <mat-expansion-panel>
-            <mat-expansion-panel-header>
-              <mat-panel-title>
-                PRODUCTOS
-              </mat-panel-title>
-            </mat-expansion-panel-header>
-            <a mat-list-item routerLink="/dashboard/productos/lista" routerLinkActive="active">
-              <mat-icon matListItemIcon>inventory</mat-icon>
-              <span class="letras">Gestión de Stock</span>
-            </a>
-            <a mat-list-item routerLink="/dashboard/productos/pagos" routerLinkActive="active">
-              <mat-icon matListItemIcon>payment</mat-icon>
-              <span class="letras">Cobros</span>
-            </a>
-          </mat-expansion-panel>
-        </mat-nav-list>
-      </mat-sidenav>
-      <mat-sidenav-content>
-        <div class="content">
-          <router-outlet></router-outlet>
         </div>
-      </mat-sidenav-content>
-    </mat-sidenav-container>
+      </mat-expansion-panel>
+    </mat-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
   `,
   styles: [`
-    :host {
-      display: block;
-      height: 100vh;
-    }
-    span.titulo {
-      flex: 1; 
-      text-align: center; 
-      font-size: 27px;
-    }
-    mat-sidenav-container {
-      height: calc(100% - 64px);
-    }
-    mat-sidenav {
-      width: 250px;
-      background-color: #671a3b;
-    }
-    .letras {
-      color: #ffffff;
-    }
-    .content {
-      padding: 20px;
-    }
-    .active {
-      background-color: rgba(0, 0, 0, 0.17);
-    }
+:host {
+  display: block;
+  height: 100vh;
+}
+
+span.titulo {
+  flex: 1; 
+  text-align: center; 
+  font-size: 27px;
+}
+
+mat-sidenav-container {
+  height: calc(100% - 64px);
+}
+
+mat-sidenav {
+  width: 250px;
+  background-color: #671a3b;
+}
+
+.letras {
+  color: #ffffff;
+}
+
+.panel-title, .expandable {
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0px;
+}
+
+.submenu-letras {
+  color: #000000; 
+  white-space: nowrap;  
+}
+
+.expansion-panel {
+  background-color: #ffffff;
+}
+
+.submenu {
+  background-color: #ffffff;
+  padding: 0; 
+  margin: 0;  
+}
+
+.submenu a.mat-list-item {
+  padding-left: 0 !important;  
+  margin: 0 !important;  
+  display: flex;
+  align-items: center;
+  gap: 8px;  
+}
+
+mat-panel-title mat-icon {
+  color: #ffffff;
+}
+
+.content {
+  padding: 20px;
+}
+
+.active {
+  background-color: rgba(0, 0, 0, 0.17);
+}
+
+.mat-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;  
+}
+
+.expandable {
+  cursor: pointer;
+}
+
   `]
 })
 export class DashboardComponent {
+  isExpanded = false;
   constructor(private authService: AuthService) { }
 
   logout(): void {
     this.authService.logout();
   }
+
+  expandPanel(): void { this.isExpanded = !this.isExpanded; }
 }

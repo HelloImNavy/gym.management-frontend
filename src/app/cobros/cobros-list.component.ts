@@ -27,87 +27,106 @@ import { RouterModule } from '@angular/router';
   ],
   template: `
     <h2>Listado de Cobros</h2>
-    <button mat-raised-button style="background-color: #333; color: white; float: right;" (click)="addCobro()">Nuevo Cobro</button>
+<button mat-raised-button style="background-color: #333; color: white; float: right;" (click)="addCobro()">Nuevo Cobro</button>
 
-    <div class="container">
-      <table mat-table [dataSource]="filteredCobros" class="mat-elevation-z8">
-        
-        <ng-container matColumnDef="fecha">
-          <th mat-header-cell *matHeaderCellDef> Fecha </th>
-          <td mat-cell *matCellDef="let cobro"> {{ cobro.fecha | date: 'dd/MM/yyyy' }} </td>
-        </ng-container>
+<div class="container">
+  <table mat-table [dataSource]="filteredCobros" class="mat-elevation-z8">
+    
+    <ng-container matColumnDef="fecha">
+      <th mat-header-cell *matHeaderCellDef> Fecha </th>
+      <td mat-cell *matCellDef="let cobro" [ngClass]="{'pendiente': cobro.estado === 'PENDIENTE', 'pagado': cobro.estado === 'PAGADO'}"> 
+        {{ cobro.fecha | date: 'dd/MM/yyyy' }} 
+      </td>
+    </ng-container>
 
-        <ng-container matColumnDef="miembro">
-          <th mat-header-cell *matHeaderCellDef> Nombre Socio </th>
-          <td mat-cell *matCellDef="let cobro"> {{ cobro.miembroNombre }} {{ cobro.miembroApellidos }} </td>
-        </ng-container>
+    <ng-container matColumnDef="miembro">
+      <th mat-header-cell *matHeaderCellDef> Nombre Socio </th>
+      <td mat-cell *matCellDef="let cobro" [ngClass]="{'pendiente': cobro.estado === 'PENDIENTE', 'pagado': cobro.estado === 'PAGADO'}"> 
+        {{ cobro.miembroNombre }} {{ cobro.miembroApellidos }} 
+      </td>
+    </ng-container>
 
-        <ng-container matColumnDef="concepto">
-          <th mat-header-cell *matHeaderCellDef> Concepto </th>
-          <td mat-cell *matCellDef="let cobro"> {{ cobro.concepto }} </td>
-        </ng-container>
+    <ng-container matColumnDef="concepto">
+      <th mat-header-cell *matHeaderCellDef> Concepto </th>
+      <td mat-cell *matCellDef="let cobro" [ngClass]="{'pendiente': cobro.estado === 'PENDIENTE', 'pagado': cobro.estado === 'PAGADO'}"> 
+        {{ cobro.concepto }} 
+      </td>
+    </ng-container>
 
-        <ng-container matColumnDef="monto">
-          <th mat-header-cell *matHeaderCellDef> Importe (€) </th>
-          <td mat-cell *matCellDef="let cobro"> {{ cobro.monto | currency: 'EUR':'symbol':'1.2-2' }} </td>
-        </ng-container>
+    <ng-container matColumnDef="monto">
+      <th mat-header-cell *matHeaderCellDef> Importe (€) </th>
+      <td mat-cell *matCellDef="let cobro" [ngClass]="{'pendiente': cobro.estado === 'PENDIENTE', 'pagado': cobro.estado === 'PAGADO'}"> 
+        {{ cobro.monto | currency: 'EUR':'symbol':'1.2-2' }} 
+      </td>
+    </ng-container>
 
-        <ng-container matColumnDef="estado">
-          <th mat-header-cell *matHeaderCellDef> Estado </th>
-          <td mat-cell *matCellDef="let cobro"> {{ cobro.estado }} </td>
-        </ng-container>
+    <ng-container matColumnDef="estado">
+      <th mat-header-cell *matHeaderCellDef> Estado </th>
+      <td mat-cell *matCellDef="let cobro" [ngClass]="{'pendiente': cobro.estado === 'PENDIENTE', 'pagado': cobro.estado === 'PAGADO'}"> 
+        {{ cobro.estado }} 
+      </td>
+    </ng-container>
 
-        <ng-container matColumnDef="fechaPago">
-          <th mat-header-cell *matHeaderCellDef> Fecha Pago </th>
-          <td mat-cell *matCellDef="let cobro"> {{ cobro.fechaPago ? (cobro.fechaPago | date: 'dd/MM/yyyy') : 'N/A' }} </td>
-        </ng-container>
+    <ng-container matColumnDef="fechaPago">
+      <th mat-header-cell *matHeaderCellDef> Fecha Pago </th>
+      <td mat-cell *matCellDef="let cobro" [ngClass]="{'pendiente': cobro.estado === 'PENDIENTE', 'pagado': cobro.estado === 'PAGADO'}"> 
+        {{ cobro.fechaPago ? (cobro.fechaPago | date: 'dd/MM/yyyy') : 'N/A' }} 
+      </td>
+    </ng-container>
 
-        <ng-container matColumnDef="acciones">
-          <th mat-header-cell *matHeaderCellDef> Acciones </th>
-          <td mat-cell *matCellDef="let cobro">
-            <button mat-icon-button color="primary" (click)="editCobro(cobro)">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="confirmDelete(cobro)">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
+    <ng-container matColumnDef="acciones">
+      <th mat-header-cell *matHeaderCellDef> Acciones </th>
+      <td mat-cell *matCellDef="let cobro">
+        <button mat-icon-button color="primary" (click)="editCobro(cobro)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="confirmDelete(cobro)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
-    </div>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>
+
   `,
   styles: [`
     .container {
-      padding: 20px;
-      /* max-width: 800px;*/
-      margin: 0 auto;
-    }
-    h2 {
-      color: #333;
-      margin-bottom: 20px;
-    }
-    table {
-      width: 100%;
-    }
-    .mat-header-cell {
-      background-color: #f5f5f5;
-      font-weight: bold;
-    }
-    .mat-cell {
-      text-align: center;
-    }
-    .mat-elevation-z8 {
-      border-radius: 8px;
-    }
-    button[mat-raised-button] {
-      margin-bottom: 20px;
-    }
-    .mat-icon-button {
-      margin: 0 5px;
-    }
+  padding: 20px;
+  margin: 0 auto;
+}
+h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+table {
+  width: 100%;
+}
+.mat-header-cell {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+.mat-cell {
+  text-align: center;
+}
+.mat-elevation-z8 {
+  border-radius: 8px;
+}
+button[mat-raised-button] {
+  margin-bottom: 20px;
+}
+.mat-icon-button {
+  margin: 0 5px;
+}
+.pendiente {
+  background-color: #ffcccc;
+}
+.pagado {
+  background-color: #ccffcc; 
+}
+
   `]
 })
 export class CobrosListComponent implements OnInit {

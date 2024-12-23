@@ -1,115 +1,235 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ProductoService } from '../services/producto.service';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Component, Inject, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDialogRef, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog'; // Importar MiembroService
+import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
-import { CommonModule } from '@angular/common';
+import { MatListModule } from '@angular/material/list';
+import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-pagos-productos',
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    CommonModule,
+    MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule,
     MatSelectModule,
     MatOptionModule,
-    MatSnackBarModule,
-    CommonModule
+    MatListModule,
+    MatIconModule,
+    FormsModule
   ],
   template: `
-    <h2>Registrar Pago de Productos</h2>
-    <form [formGroup]="pagoForm" (ngSubmit)="onSubmit()">
-      <mat-form-field>
-        <mat-label>Nombre del Comprador</mat-label>
-        <input matInput formControlName="nombreComprador">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Tipo de Comprador</mat-label>
-        <mat-select formControlName="tipoComprador">
-          <mat-option value="socio">Socio</mat-option>
-          <mat-option value="externo">Externo</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-form-field *ngIf="pagoForm.value.tipoComprador === 'socio'">
-        <mat-label>ID del Socio</mat-label>
-        <input matInput formControlName="socioId">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Productos</mat-label>
-        <input matInput formControlName="productos">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Importe Total (€)</mat-label>
-        <input matInput formControlName="importeTotal" type="number">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Fecha de Pago</mat-label>
-        <input matInput formControlName="fechaPago" type="date">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Estado</mat-label>
-        <mat-select formControlName="estado">
-          <mat-option value="Pendiente">Pendiente</mat-option>
-          <mat-option value="Pagado">Pagado</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <div class="form-actions">
-        <button mat-button type="submit" [disabled]="pagoForm.invalid">Registrar Pago</button>
-        <button mat-button type="button" (click)="onCancel()">Cancelar</button>
-      </div>
-    </form>
+    <h2 mat-dialog-title>Nuevo Pago</h2>
+    <mat-dialog-content>
+      <form [formGroup]="pagoForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Tipo de Comprador</mat-label>
+          <mat-select formControlName="tipoComprador" (selectionChange)="onTipoCompradorChange($event)">
+            <mat-option value="socio">Socio</mat-option>
+            <mat-option value="externo">Externo</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div *ngIf="pagoForm.get('tipoComprador')?.value === 'socio'">
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Buscar Socio</mat-label>
+            <input matInput (input)="buscarSocio($event)" placeholder="Ingrese el Nombre/Apellido del Socio">
+          </mat-form-field>
+          <mat-list *ngIf="sociosFiltrados.length > 0">
+            <mat-list-item *ngFor="let socio of sociosFiltrados" (click)="seleccionarSocio(socio)">
+              {{socio.nombre}} {{socio.apellidos}}
+            </mat-list-item>
+          </mat-list>
+        </div>
+
+        <div *ngIf="pagoForm.get('tipoComprador')?.value === 'externo'">
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Nombre del Comprador</mat-label>
+            <input matInput formControlName="nombreComprador" placeholder="Ingrese el Nombre del Comprador">
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Productos</mat-label>
+          <input matInput (input)="buscarProducto($event)" placeholder="Ingrese el Nombre del Producto">
+        </mat-form-field>
+        <mat-list *ngIf="productosFiltrados && productosFiltrados.length > 0">
+          <mat-list-item *ngFor="let producto of productosFiltrados" (click)="seleccionarProducto(producto)">
+            {{producto.nombre}} - Stock: {{producto.stock}}
+          </mat-list-item>
+        </mat-list>
+
+        <div *ngIf="productosSeleccionados.length > 0">
+          <h4>Productos Seleccionados:</h4>
+          <mat-list>
+            <mat-list-item *ngFor="let producto of productosSeleccionados; let i = index" class="producto-list-item">
+              {{producto.nombre}} - Precio: {{producto.precio}}€
+              <input
+                type="number"
+                [(ngModel)]="producto.cantidad"
+                (ngModelChange)="actualizarImporteTotal()"
+                min="1"
+              />
+              <button mat-icon-button color="warn" (click)="eliminarProducto(i)">
+                <mat-icon>clear</mat-icon>
+              </button>
+            </mat-list-item>
+          </mat-list>
+        </div>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Importe Total</mat-label>
+          <input matInput formControlName="importeTotal" placeholder="Ingrese el Importe Total" type="number" readonly>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Fecha de Pago</mat-label>
+          <input matInput formControlName="fechaPago" placeholder="Ingrese la Fecha de Pago (dd/mm/yyyy)">
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Estado</mat-label>
+          <mat-select formControlName="estado">
+            <mat-option value="PAGADO">Pagado</mat-option>
+            <mat-option value="PENDIENTE">Pendiente</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Observaciones</mat-label>
+          <textarea matInput formControlName="observaciones" placeholder="Ingrese las Observaciones"></textarea>
+        </mat-form-field>
+
+        <div mat-dialog-actions>
+          <button mat-button type="submit" [disabled]="!pagoForm.valid">Guardar</button>
+          <button mat-button mat-dialog-close>Cancelar</button>
+        </div>
+      </form>
+    </mat-dialog-content>
   `,
   styles: [`
-    .form-actions {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 16px;
+    .form-section {
+      margin-bottom: 24px;
     }
-  `]
+    .producto-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .producto-list-item input {
+      width: 60px;
+      margin-left: 16px;
+    }
+  `],
 })
 export class PagosProductosComponent implements OnInit {
   pagoForm: FormGroup;
+  productosFiltrados: any[] = [];
+  sociosFiltrados: any[] = [];
+  productosSeleccionados: any[] = [];
 
   constructor(
     private fb: FormBuilder,
-    private productoService: ProductoService,
-    private snackBar: MatSnackBar
+    public dialogRef: MatDialogRef<PagosProductosComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.pagoForm = this.fb.group({
-      nombreComprador: ['', Validators.required],
-      tipoComprador: ['externo', Validators.required],
-      socioId: [''],
-      productos: ['', Validators.required],
-      importeTotal: ['', [Validators.required, Validators.min(0)]],
+      tipoComprador: ['', Validators.required],
+      nombreComprador: [''],
+      importeTotal: [{ value: '', disabled: true }],
       fechaPago: ['', Validators.required],
-      estado: ['Pendiente', Validators.required]
+      estado: ['', Validators.required],
+      observaciones: ['']
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.pagoForm = this.fb.group({
+      tipoComprador: ['socio', Validators.required], // 'socio' por defecto
+      nombreComprador: [''],
+      importeTotal: [0, Validators.required],
+      fechaPago: ['', Validators.required],
+      estado: ['PENDIENTE', Validators.required],
+      observaciones: ['']
+    });
 
-  onSubmit(): void {
-    if (this.pagoForm.valid) {
-      this.productoService.registrarPago(this.pagoForm.value).subscribe({
-        next: () => {
-          this.snackBar.open('Pago registrado con éxito', 'Cerrar', { duration: 3000 });
-          this.pagoForm.reset();
-        },
-        error: (err) => {
-          this.snackBar.open('Error al registrar el pago', 'Cerrar', { duration: 3000 });
-          console.error(err);
-        }
-      });
+    this.onTipoCompradorChange({ value: this.pagoForm.get('tipoComprador')?.value });
+  }
+
+  // Esta función maneja el cambio de tipo de comprador
+  onTipoCompradorChange(event: any): void {
+    if (event.value === 'socio') {
+      this.pagoForm.get('nombreComprador')?.disable();
+    } else {
+      this.pagoForm.get('nombreComprador')?.enable();
     }
   }
 
+  // Agregar producto al array de productos seleccionados
+  agregarProducto(producto: any) {
+    this.productosSeleccionados.push({ ...producto, cantidad: 1 });
+    this.actualizarImporteTotal();
+  }
+
+  // Eliminar producto del array de productos seleccionados
+  eliminarProducto(index: number) {
+    this.productosSeleccionados.splice(index, 1);
+    this.actualizarImporteTotal();
+  }
+
+  // Actualizar el importe total
+  actualizarImporteTotal() {
+    const total = this.productosSeleccionados.reduce((acc, producto) => acc + (producto.precio * producto.cantidad), 0);
+    this.pagoForm.get('importeTotal')?.setValue(total);
+  }
+
+  // Función para buscar productos
+  buscarProducto(event: any) {
+    const query = event.target.value.toLowerCase();
+    this.productosFiltrados = this.data.productos.filter((producto: any) =>
+      producto.nombre.toLowerCase().includes(query)
+    );
+  }
+
+  // Función para seleccionar un producto
+  seleccionarProducto(producto: any) {
+    this.agregarProducto(producto);
+    this.productosFiltrados = [];
+  }
+
+  // Función para manejar el submit del formulario
+  onSubmit() {
+    if (this.pagoForm.valid) {
+      console.log(this.pagoForm.value);
+      this.dialogRef.close(this.pagoForm.value);
+    }
+  }
+
+    // Función para buscar socios
+    buscarSocio(event: any): void {
+      const query = event.target.value.toLowerCase();
+      this.sociosFiltrados = this.data.socios.filter((socio: any) => 
+        socio.nombre.toLowerCase().includes(query) || socio.apellidos.toLowerCase().includes(query)
+      );
+    }
+  
+    // Función para seleccionar un socio
+    seleccionarSocio(socio: any) {
+      this.pagoForm.patchValue({
+        nombreComprador: socio.nombre
+      });
+      this.sociosFiltrados = [];
+    }
+
+  // Función para cerrar el dialogo
   onCancel(): void {
-    this.pagoForm.reset();
+    this.dialogRef.close();
   }
 }
