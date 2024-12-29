@@ -4,7 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { CommonModule } from '@angular/common'; 
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-actividad-form',
@@ -25,7 +25,7 @@ export class ActividadFormComponent {
   actividad: any = {};
   isEditing: boolean = false;
 
-  constructor(private actividadService: ActividadService, private router: Router, private route: ActivatedRoute) {}
+  constructor(private actividadService: ActividadService, private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit() {
     this.route.paramMap.pipe(

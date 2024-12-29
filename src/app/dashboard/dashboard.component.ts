@@ -61,6 +61,10 @@ import { AuthService } from '../auth/auth.service';
           </a>
         </div>
       </mat-expansion-panel>
+      <a mat-list-item routerLink="/dashboard/contabilidad" routerLinkActive="active">
+        <mat-icon matListItemIcon>account_balance</mat-icon>
+        <span matListItemTitle class="letras">CONTABILIDAD</span>
+      </a>
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>

@@ -85,7 +85,7 @@ export class CobroFormComponent {
     if (this.cobroForm.valid) {
       const cobro: CobroDTO = this.cobroForm.getRawValue();
       if (this.isEditing) {
-        this.cobrosService.updateCobro(this.data.id, cobro).subscribe(() => this.dialogRef.close(true));
+        this.cobrosService.updateCobro(this.data.id!, cobro).subscribe(() => this.dialogRef.close(true));
       } else {
         this.cobrosService.addCobro(cobro).subscribe(() => this.dialogRef.close(true));
       }

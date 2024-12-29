@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject} from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -10,6 +10,9 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MiembroService } from '../services/miembro.service';
 import { Miembro } from '../models/miembro.model';
+import { ActividadService } from '../services/actividad.service';
+import { Actividad } from '../models/actividad.model';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-miembros-form',
@@ -108,6 +111,7 @@ export class MiembrosFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private miembroService: MiembroService,
+    private actividadService: ActividadService,
     private snackBar: MatSnackBar,
     private dialogRef: MatDialogRef<MiembrosFormComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
@@ -139,40 +143,51 @@ export class MiembrosFormComponent implements OnInit {
     });
   }
 
+
   onSubmit(): void {
     if (this.miembroForm.valid) {
       const miembroData = this.miembroForm.value;
-  
-      const socioPayload: Miembro = {
-        nombre: miembroData.nombre,
-        apellidos: miembroData.apellidos,
-        direccion: miembroData.direccion,
-        telefono: miembroData.telefono,
-        fechaNacimiento: miembroData.fechaNacimiento,
-        observaciones: miembroData.observaciones,
-        fechaAlta: miembroData.fechaAlta,
-        inscripciones: miembroData.actividades.map((actividadId: number) => ({
-          actividad: { id: actividadId },
+
+      // Crear una lista de observables para obtener las actividades
+      const actividadObservables = miembroData.actividades.map((actividadId: string) =>
+        this.actividadService.getActividad(actividadId)
+      );
+
+      // Ejecutar todas las llamadas al servicio y esperar sus resultados
+      forkJoin(actividadObservables).subscribe((actividades: any) => {
+        const socioPayload: Miembro = {
+          nombre: miembroData.nombre,
+          apellidos: miembroData.apellidos,
+          direccion: miembroData.direccion,
+          telefono: miembroData.telefono,
+          fechaNacimiento: miembroData.fechaNacimiento,
+          observaciones: miembroData.observaciones,
           fechaAlta: miembroData.fechaAlta,
-        }))
-      };
-  
-      // Crear el miembro
-      this.miembroService.crearMiembro(socioPayload).subscribe({
-        next: (response) => {
-          this.snackBar.open('Socio creado con éxito', 'Cerrar', { duration: 3000 });
-          this.dialogRef.close(true);
-        },
-        error: (err) => {
-          this.snackBar.open('Error al crear socio', 'Cerrar', { duration: 3000 });
-          console.error(err);
-        }
-      });
+          inscripciones: actividades.map((actividad: { id: any; nombre: any; costo: any; }) => ({
+            actividad: {
+              id: actividad.id,
+              nombre: actividad.nombre,
+              costo: actividad.costo,
+            },
+            fechaAlta: miembroData.fechaAlta,
+          })),
+        };
+
+        // Crear el miembro
+        this.miembroService.crearMiembro(socioPayload).subscribe({
+          next: (response) => {
+            this.snackBar.open('Socio creado con éxito', 'Cerrar', { duration: 3000 });
+            this.dialogRef.close(true);
+          },
+          error: (err) => {
+            this.snackBar.open('Error al crear socio', 'Cerrar', { duration: 3000 });
+            console.error(err);
+          }
+        });
+      }
+      )
     }
   }
-  
- 
-  
 
   onCancel(): void {
     this.dialogRef.close();

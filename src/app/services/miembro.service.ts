@@ -14,7 +14,7 @@ export class MiembroService {
   private inscripcionesUrl = 'http://localhost:8080/inscripciones';
   private cobrosUrl = 'http://localhost:8080/cobros';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getMiembros(): Observable<Miembro[]> {
     return this.http.get<Miembro[]>(this.apiUrl);
@@ -31,10 +31,10 @@ export class MiembroService {
   actualizarMiembro(id: number, miembro: Miembro): Observable<Miembro> {
     return this.http.put<Miembro>(`${this.apiUrl}/actualizar/${id}`, miembro);
   }
-  
+
   getDetallesMiembro(id: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/${id}`);
-  }  
+  }
 
   eliminarMiembro(id: number): Observable<string> {
     return this.http.delete<string>(`${this.apiUrl}/${id}`, { responseType: 'text' as 'json' });
@@ -76,13 +76,19 @@ export class MiembroService {
     console.log(`Solicitud PUT a: ${url} con fechaBaja: ${fechaBaja}`); // Añade un log para verificar la solicitud
     return this.http.put<void>(url, {}, { params });
   }
-  
-  inscribirEnActividad(miembroId: number, actividadId: number): Observable<void> {
-    return this.http.post<void>(`${this.inscripcionesUrl}`, [{ idMiembro: miembroId, idActividad: actividadId, fechaAlta: new Date().toISOString().split('T')[0] }]);
+
+
+  inscribirEnActividad(miembroId: number, actividadId: number): Observable<any> {
+    const params = new HttpParams()
+      .set('miembroId', miembroId)
+      .set('actividadId', actividadId);
+
+    return this.http.post(`${this.inscripcionesUrl}/registrar`, {}, { params });
   }
+
 
   getActividadesDisponibles(): Observable<Actividad[]> {
     return this.http.get<Actividad[]>(`${this.actividadesUrl}/disponibles`);
-  } 
-  
+  }
+
 }

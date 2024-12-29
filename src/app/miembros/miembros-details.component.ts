@@ -14,6 +14,7 @@ import { CobroDTO } from '../models/cobro.model';
 import { CobrosService } from '../services/cobros.service';
 import { Mes } from '../models/mes.model';
 import { Inscripcion } from '../models/inscripcion.model';
+import { DTOCobro } from '../models/cobroDTO.model';
 
 @Component({
   selector: 'app-miembro-detail',
@@ -69,17 +70,21 @@ import { Inscripcion } from '../models/inscripcion.model';
         <input matInput formControlName="fechaAlta" type="date" />
       </mat-form-field>
 
+      <!-- Columna de baja -->
       <div class="baja-section">
         <mat-form-field appearance="fill" class="compact-field baja-field">
           <mat-label>Fecha de Baja</mat-label>
           <input matInput formControlName="fechaBaja" type="date" [disabled]="!isConfirmingBaja" />
         </mat-form-field>
-        <button mat-raised-button color="warn" *ngIf="!isConfirmingBaja" (click)="toggleConfirmBaja()">
+        <button mat-raised-button color="warn" *ngIf="!isConfirmingBaja && !data.fechaBaja" (click)="toggleConfirmBaja()">
           Dar de Baja
         </button>
-        <button mat-raised-button color="primary" *ngIf="isConfirmingBaja" (click)="confirmBaja()">
-          Confirmar
+        <button mat-raised-button color="primary" *ngIf="isConfirmingBaja && !data.fechaBaja" (click)="confirmBaja()">
+          Confirmar Baja
         </button>
+        <button mat-raised-button color="accent" *ngIf="data.fechaBaja" (click)="reactivarMiembro()">
+          Reactivar
+        </button> 
       </div>
     </div>
 
@@ -90,22 +95,33 @@ import { Inscripcion } from '../models/inscripcion.model';
         <h3>Actividades</h3>
         <ul>
           <li *ngFor="let inscripcion of data.inscripciones">
-            <span>{{ inscripcion.actividad?.nombre }}</span> <!-- El operador ?. manejará el caso de null -->
-            <button mat-icon-button color="warn" matTooltip="Dar de baja de esta actividad" (click)="onDarDeBajaActividad(inscripcion.id)">
+            <span *ngIf="!inscripcion.fechaBaja">
+              {{ inscripcion.fechaBaja | date: 'dd/MM/yyyy' }} {{ inscripcion.actividad?.nombre }}
+            </span>
+            <button *ngIf="!inscripcion.fechaBaja" 
+                    mat-icon-button 
+                    color="warn" 
+                    matTooltip="Dar de baja de esta actividad" 
+                    (click)="confirmDarDeBajaActividad(inscripcion.id)">
               <mat-icon>close</mat-icon>
             </button>
           </li>
         </ul>
-        <mat-form-field appearance="fill" class="compact-field">
+
+        <mat-form-field *ngIf="availableActividades.length > 0" appearance="fill" class="compact-field">
           <mat-label>Agregar Nueva Actividad</mat-label>
-          <mat-select formControlName="selectedActividadId" placeholder="Selecciona una actividad">
+          <mat-select formControlName="selectedActividadId" placeholder="Selecciona una actividad" *ngIf="availableActividades.length > 0">
             <mat-option *ngFor="let actividad of availableActividades" [value]="actividad.id">
               {{ actividad.nombre }}
             </mat-option>
           </mat-select>
         </mat-form-field>
-        <button mat-raised-button color="primary" (click)="onAgregarActividad()">Agregar Actividad</button>
+        <button mat-raised-button color="primary" (click)="onAgregarActividad()" *ngIf="availableActividades.length > 0">
+          Agregar Actividad
+        </button>
+        <p *ngIf="availableActividades.length === 0">Ya está inscrito en todas las actividades disponibles.</p>
       </section>
+
 
       <!-- Pagos -->
       <section class="payments-section">
@@ -292,16 +308,14 @@ export class MiembroDetailComponent implements OnInit {
   miembroForm: FormGroup;
   isEditing = false;
   isConfirmingBaja = false;
-  selectedActividadId?: number;
   availableActividades: Actividad[] = [];
   todosPagados: boolean = false;
-
   constructor(
     private fb: FormBuilder,
     private miembroService: MiembroService,
     private cobrosService: CobrosService,
     private dialogRef: MatDialogRef<MiembroDetailComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any = { actividades: [], months: [] }
+    @Inject(MAT_DIALOG_DATA) public data: any = { months: [] }
   ) {
     this.miembroForm = this.fb.group({
       nombre: [{ value: data?.nombre || '', disabled: true }, Validators.required],
@@ -323,44 +337,62 @@ export class MiembroDetailComponent implements OnInit {
   }
 
   loadMemberDetails(): void {
-    this.miembroService.getDetallesMiembro(this.data.id).subscribe((detalles: any) => {
+    this.miembroService.getInscripcionesByMiembroId(this.data.id).subscribe((detalles: any) => {
       console.log("Detalles del miembro recibidos:", detalles);
-      this.data.actividades = detalles.actividades || [];
-      console.log("Actividades recibidas:", this.data.actividades);
-      this.data.inscripciones = detalles.inscripciones || [];
+      this.data.inscripciones = detalles || [];
       console.log("Inscripciones recibidas:", this.data.inscripciones);
-  
-      // Verificar que cada inscripción tiene un actividadId
-      this.data.inscripciones.forEach((inscripcion: Inscripcion) => {
-        console.log(`Inscripción ID: ${inscripcion.id}, Actividad ID: ${inscripcion.actividadId}`);
+
+      this.data.inscripciones.forEach((inscripcion: any) => {
+        console.log(`Inscripción ID: ${inscripcion.id}, Actividad ID: ${inscripcion.idActividad}`);
       });
-  
-      // Vincular inscripciones con actividades correspondientes usando actividadId
-      this.data.inscripciones = this.data.inscripciones.map((inscripcion: Inscripcion) => {
-        const actividad = this.data.actividades.find((a: Actividad) => a.id === inscripcion.actividadId);
+
+      // Vincular inscripciones con actividades correspondientes
+      this.data.inscripciones = this.data.inscripciones.map((inscripcion: any) => {
+        const actividad = this.data.actividades.find((a: Actividad) => a.id === inscripcion.idActividad);
         if (actividad) {
-          console.log(`Vinculando actividad ${actividad.nombre} (ID: ${actividad.id}) con inscripción ${inscripcion.id}`);
-          return { ...inscripcion, actividad }; // Crea un nuevo objeto que incluye la actividad
+          console.log(`Vinculando actividad ${actividad.nombre} (ID: ${actividad.id}) con inscripción ${inscripcion.idActividad}`);
+          return { ...inscripcion, actividad }; // Crear un nuevo objeto que incluye la actividad
         } else {
-          console.warn(`No se encontró actividad para la inscripción ${inscripcion.id} con actividadId ${inscripcion.actividadId}`);
-          return { ...inscripcion, actividad: null }; // Maneja la inscripción sin actividad
+          console.warn(`No se encontró actividad para la inscripción ${inscripcion.id} con actividadId ${inscripcion.idActividad}`);
+          return { ...inscripcion, actividad: null }; // Manejar la inscripción sin actividad
         }
       });
-  
+
       console.log("Inscripciones después de vincular actividades:", this.data.inscripciones);
       this.calculatePaymentsStatus();
+      this.loadAvailableActividades();
     }, error => {
       console.error("Error al cargar los detalles del miembro:", error);
     });
   }
-  
-
 
   loadAvailableActividades(): void {
     this.miembroService.getActividadesDisponibles().subscribe((actividades: Actividad[]) => {
-      this.availableActividades = actividades;
+      // Filtrar actividades ya inscritas
+      this.availableActividades = actividades.filter(actividad =>
+        !this.data.inscripciones.some((inscripcion: { actividad: { id: number; }; fechaBaja: any; }) =>
+          inscripcion.actividad?.id === actividad.id && !inscripcion.fechaBaja
+        )
+      );
+      this.checkActividadesDisponibles();
     });
   }
+
+
+
+  checkActividadesDisponibles(): void {
+    const hasActividadesDisponibles = this.availableActividades.length > 0;
+    const actividadControl = this.miembroForm.get('selectedActividadId');
+
+    if (actividadControl) {
+      if (hasActividadesDisponibles) {
+        actividadControl.enable();
+      } else {
+        actividadControl.disable();
+      }
+    }
+  }
+
 
   calculatePaymentsStatus(): void {
     const meses: Mes[] = this.data.months;
@@ -420,19 +452,19 @@ export class MiembroDetailComponent implements OnInit {
     return meses.indexOf(mes);
   }
 
+  onClose(): void {
+    this.dialogRef.close(true);
+  }
+
   onSave(): void {
-    console.log(this.miembroForm.value);
     if (this.miembroForm.invalid) {
       return;
     }
 
     const updatedData = { ...this.data, ...this.miembroForm.value };
-
     this.miembroService.actualizarMiembro(this.data.id, updatedData).subscribe({
       next: () => {
-        // Actualizar los datos del miembro en la vista sin cerrar el popup
         this.data = updatedData;
-        // Deshabilitar todos los campos del formulario
         this.isEditing = false;
         Object.keys(this.miembroForm.controls).forEach(control => {
           const formControl = this.miembroForm.get(control);
@@ -446,10 +478,6 @@ export class MiembroDetailComponent implements OnInit {
         console.error('Error al actualizar el miembro:', error);
       }
     });
-  }
-
-  onClose(): void {
-    this.dialogRef.close(true);
   }
 
   toggleEdit(): void {
@@ -482,6 +510,35 @@ export class MiembroDetailComponent implements OnInit {
     }
   }
 
+  reactivarMiembro(): void {
+    if (this.data && this.miembroForm.get('fechaBaja')?.value) {
+      // Crear objeto con los datos actualizados para reactivar el miembro
+      const updatedData = { ...this.data, fechaBaja: null };
+
+      // Llamar al servicio para actualizar al miembro
+      this.miembroService.actualizarMiembro(this.data.id, updatedData).subscribe({
+        next: () => {
+          // Limpiar la fecha de baja en el objeto data
+          this.data.fechaBaja = null;
+          this.miembroForm.get('fechaBaja')?.setValue(null);
+
+          console.log('Miembro reactivado');
+
+          // Recargar los detalles del miembro
+          this.loadMemberDetails();  // Esto debería recargar las inscripciones y cualquier otra información
+
+          // Si necesitas también habilitar algunos campos específicos después de la reactivación, puedes hacerlo aquí:
+          this.toggleEdit();  // Activar la edición si es necesario
+        },
+        error: (error) => {
+          console.error('Error al reactivar al miembro:', error);
+        }
+      });
+    } else {
+      console.log('El miembro no está dado de baja.');
+    }
+  }
+
   confirmBaja(): void {
     if (this.isConfirmingBaja && this.miembroForm.get('fechaBaja')?.value) {
       const fechaBaja = this.miembroForm.get('fechaBaja')?.value;
@@ -489,9 +546,13 @@ export class MiembroDetailComponent implements OnInit {
 
       this.miembroService.darDeBajaMiembro(this.data.id, formattedFechaBaja).subscribe({
         next: () => {
+          // Actualizar los detalles del miembro
           this.data.fechaBaja = formattedFechaBaja;
           this.miembroForm.get('fechaBaja')?.disable();
           this.isConfirmingBaja = false;
+
+          // Forzar la actualización de la vista para que los botones se actualicen
+          this.loadMemberDetails();
           console.log('Miembro dado de baja');
         },
         error: (error) => {
@@ -503,29 +564,68 @@ export class MiembroDetailComponent implements OnInit {
 
 
   onAgregarActividad(): void {
-    if (!this.selectedActividadId) {
+    const selectedActividadId = this.miembroForm.get('selectedActividadId')?.value;
+    if (!selectedActividadId) {
       return;
     }
 
-    const actividadSeleccionada = this.availableActividades.find(a => a.id === this.selectedActividadId);
+    const actividadSeleccionada = this.availableActividades.find(a => a.id === selectedActividadId);
     if (!actividadSeleccionada) return;
 
-    this.miembroService.inscribirEnActividad(this.data.id, this.selectedActividadId).subscribe(() => {
-      this.data.actividades.push(actividadSeleccionada);
+    // Inscribir al miembro en la actividad
+    this.miembroService.inscribirEnActividad(parseInt(this.data.id), parseInt(selectedActividadId)).subscribe({
+      next: (response) => {
+        const inscripcion = response.inscripcion;
+        if (!inscripcion?.id) {
+          console.error("La inscripción no contiene un ID válido.");
+          return;
+        }
 
-      this.cobrosService.addCobro({
-        id: 0,
-        miembroNombre: this.data.nombre,
-        miembroApellidos: this.data.apellidos,
-        concepto: 'Pago de Actividad: ' + actividadSeleccionada.nombre,
-        fecha: new Date().toISOString().split('T')[0],
-        monto: actividadSeleccionada.costo,
-        estado: 'PENDIENTE'
-      }).subscribe(() => {
-        this.loadMemberDetails();
-      });
+        // Agregar la inscripción a la lista
+        this.data.inscripciones.push({
+          id: inscripcion.id,
+          actividad: actividadSeleccionada,
+          fechaBaja: null
+        });
+
+        // Crear el cobro con el objeto miembro completo (en lugar de solo los datos de nombre y apellidos)
+        const cobroPayload: DTOCobro = {
+          miembro: {
+            id: parseInt(this.data.id),
+            nombre: this.data.nombre,
+            apellidos: this.data.apellidos,
+          },
+          inscripcion: {
+            id: inscripcion.id, // Usamos el ID de la inscripción recién creada
+            actividad: {
+              id: actividadSeleccionada.id,
+              nombre: actividadSeleccionada.nombre,
+            },
+          },
+          concepto: 'Pago de Actividad: ' + actividadSeleccionada.nombre,
+          fecha: new Date().toISOString().split('T')[0],
+          monto: actividadSeleccionada.costo,
+          estado: 'PENDIENTE',
+        };
+        console.log("Cobro Payload:", cobroPayload);
+
+        // Enviar el cobro
+        this.cobrosService.addCobroMiembro(cobroPayload).subscribe({
+          next: () => {
+            this.loadMemberDetails();
+            this.loadAvailableActividades();  // Recargar los detalles del miembro después del cobro
+          },
+          error: (error) => {
+            console.error('Error al añadir el cobro:', error);
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error al inscribir al miembro en la actividad:', error);
+      }
     });
   }
+
 
   confirmDarDeBajaActividad(actividadId: number): void {
     if (confirm("¿Confirma que desea dar de baja al miembro de esta actividad?")) {
@@ -533,34 +633,21 @@ export class MiembroDetailComponent implements OnInit {
     }
   }
 
-
-  onDarDeBajaActividad(idInscripcion: number): void {
-    if (idInscripcion == null) {
-      console.error("ID de inscripción es nulo o indefinido.");
-      return;
-    }
-  
-    const fechaBaja = new Date().toISOString().split('T')[0];  // Fecha actual en formato 'YYYY-MM-DD'
-    console.log(`Dando de baja inscripción con ID: ${idInscripcion} y fecha de baja: ${fechaBaja}`);
-  
-    this.miembroService.darDeBajaInscripcion(idInscripcion, fechaBaja).subscribe(
-      () => {
-        // Filtrar la inscripción dada de baja de la lista
-        this.data.inscripciones = this.data.inscripciones.filter((i: Inscripcion) => i.id !== idInscripcion);
-        console.log(`Inscripción con ID ${idInscripcion} dada de baja.`);
-      },
-      (error) => {
-        if (error.status === 400) {
-          // Error de validación (por ejemplo, fecha de baja futura o inscripción ya dada de baja)
-          console.error('Error de validación al dar de baja la inscripción:', error.error);
-          alert(`Error: ${error.error}`);  // Mostrar mensaje de error al usuario
-        } else {
-          console.error('Error al dar de baja la inscripción:', error);
+  onDarDeBajaActividad(inscripcionId: number): void {
+    this.miembroService.darDeBajaInscripcion(inscripcionId, new Date().toISOString().split('T')[0]).subscribe({
+      next: () => {
+        // Actualizar inscripciones
+        const inscripcion = this.data.inscripciones.find((i: { id: number; }) => i.id === inscripcionId);
+        if (inscripcion) {
+          inscripcion.fechaBaja = new Date(); // Marcar como dada de baja
         }
+
+        // Recalcular actividades disponibles
+        this.loadAvailableActividades();
+      },
+      error: (error) => {
+        console.error("Error al dar de baja la actividad:", error);
       }
-    );
+    });
   }
-  
-  
-  
 }  

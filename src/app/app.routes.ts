@@ -10,6 +10,7 @@ import { ActividadesListComponent } from './actividades/actividades-list.compone
 import { ActividadesEditComponent } from './actividades/actividades-edit.component';
 import { ProductoListComponent } from './productos/producto-list.component';
 import { PagosListaComponent } from './productos/pagos-lista.component';
+import { ContabilidadComponent } from './contabilidad/contabilidad.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -23,7 +24,7 @@ export const routes: Routes = [
       { path: 'miembros', component: MiembroListaComponent },
       { path: 'miembros/nuevo', component: MiembrosFormComponent },
       { path: 'miembros/:id', component: MiembrosFormComponent },
-      { path: 'cobros', component: CobrosListComponent }, 
+      { path: 'cobros', component: CobrosListComponent },
       { path: 'actividades/nueva', component: ActividadFormComponent },
       { path: 'actividades/:id/editar', component: ActividadesEditComponent },
       { path: 'actividades', component: ActividadesListComponent },
@@ -34,7 +35,8 @@ export const routes: Routes = [
           { path: 'lista', component: ProductoListComponent },
           { path: 'pagos', component: PagosListaComponent }
         ]
-      }
+      },
+      { path: 'contabilidad', component: ContabilidadComponent },
     ]
   }
 ];

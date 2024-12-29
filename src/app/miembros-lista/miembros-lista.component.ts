@@ -22,19 +22,19 @@ import { MatSortModule } from '@angular/material/sort';
   selector: 'app-miembros-lista',
   standalone: true,
   imports: [
-    CommonModule, 
-    MatTableModule, 
-    MatButtonModule, 
-    MatIconModule, 
-    RouterModule, 
-    MatDialogModule, 
-    MatFormFieldModule, 
-    FormsModule, 
-    MatInputModule, 
-    MatSelectModule, 
+    CommonModule,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    RouterModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    FormsModule,
+    MatInputModule,
+    MatSelectModule,
     FormsModule,
     MatPaginatorModule,
-    MatSortModule  
+    MatSortModule
   ],
   template: `
     <h2>SOCIOS</h2>
@@ -58,6 +58,9 @@ import { MatSortModule } from '@angular/material/sort';
           <mat-option value="inactive">Inactivos</mat-option>
         </mat-select>
       </mat-form-field>
+
+      <!-- Botón para resetear filtros -->
+      <button mat-raised-button color="accent" (click)="resetearFiltros()">Resetear Filtros</button>
     </div>
 
     <div class="container">
@@ -89,18 +92,6 @@ import { MatSortModule } from '@angular/material/sort';
           <td mat-cell *matCellDef="let miembro">{{ miembro.telefono }}</td>
         </ng-container>
 
-        <!-- Columna de actividades -->
-        <ng-container matColumnDef="actividades">
-        <th mat-header-cell *matHeaderCellDef>Actividades</th>
-        <td mat-cell *matCellDef="let miembro">{{ "hola" }}</td>
-      </ng-container>
-
-        <!-- Columna de observaciones -->
-        <ng-container matColumnDef="observaciones">
-          <th mat-header-cell *matHeaderCellDef>Observaciones</th>
-          <td mat-cell *matCellDef="let miembro">{{ miembro.observaciones }}</td>
-        </ng-container>
-
         <!-- Columna de acciones -->
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef>Acciones</th>
@@ -127,9 +118,18 @@ import { MatSortModule } from '@angular/material/sort';
     table {
       width: 100%;
       margin-top: 20px;
+      table-layout: fixed; /* Evita que la tabla cambie de tamaño */
     }
     button[mat-raised-button] {
       margin-bottom: 20px;
+    }
+    .filter-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .filter-field {
+      width: 250px;
     }
   `],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
@@ -137,15 +137,16 @@ import { MatSortModule } from '@angular/material/sort';
 export class MiembroListaComponent implements OnInit {
   miembros: Miembro[] = [];
   dataSource = new MatTableDataSource<Miembro>();
-  columnas: string[] = ['estado', 'nombre', 'apellidos', 'telefono', 'actividades', 'observaciones', 'acciones'];
+  columnas: string[] = ['estado', 'nombre', 'apellidos', 'telefono', 'acciones'];
   filterValue: string = '';
   statusFilter: string = 'all';
   totalItems: number = 0;
   pageSize: number = 10;
+  miembroData: any;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  constructor(private miembroService: MiembroService, private dialog: MatDialog) {}
+  constructor(private miembroService: MiembroService, private dialog: MatDialog) { }
 
   ngOnInit(): void {
     this.cargarMiembros();
@@ -167,7 +168,7 @@ export class MiembroListaComponent implements OnInit {
 
   aplicarFiltros(): void {
     let filtered = this.miembros;
-  
+
     // Filtrar por nombre o apellidos
     if (this.filterValue) {
       filtered = filtered.filter(miembro =>
@@ -175,23 +176,30 @@ export class MiembroListaComponent implements OnInit {
         miembro.apellidos.toLowerCase().includes(this.filterValue.toLowerCase())
       );
     }
-  
+
     // Filtrar por estado (activo o inactivo)
     if (this.statusFilter === 'active') {
       filtered = filtered.filter(miembro => !miembro.fechaBaja); // Activos
     } else if (this.statusFilter === 'inactive') {
       filtered = filtered.filter(miembro => miembro.fechaBaja); // Inactivos
     }
-  
+
     // Si el filtro es "Todos", no se aplica ningún filtro de estado
     this.dataSource.data = filtered;  // Usar filteredMiembros para la tabla
+  }
+
+  resetearFiltros(): void {
+    // Resetear los filtros
+    this.filterValue = '';
+    this.statusFilter = 'all';
+    this.aplicarFiltros(); // Aplicar los filtros resetados
   }
 
   eliminarMiembro(id: number | undefined): void {
     if (id && confirm('¿Está seguro de eliminar este miembro?')) {
       this.miembroService.eliminarMiembro(id).subscribe({
         next: (mensaje: string) => {
-          alert(mensaje); 
+          alert(mensaje);
           this.cargarMiembros();
         },
         error: (error) => {
@@ -210,11 +218,15 @@ export class MiembroListaComponent implements OnInit {
     });
   }
 
-  abrirDetallesMiembro(miembro: Miembro): void {
+  abrirDetallesMiembro(miembro: any): void {
     const dialogRef = this.dialog.open(MiembroDetailComponent, {
-      width: '1000px',
-      data: miembro, 
+      data: miembro
     });
-  
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.cargarMiembros();
+      }
+    });
   }
 }
