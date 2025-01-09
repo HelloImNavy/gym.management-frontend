@@ -159,6 +159,7 @@ export class DashboardComponent {
 
   logout(): void {
     this.authService.logout();
+    
   }
 
   expandPanel(): void { this.isExpanded = !this.isExpanded; }

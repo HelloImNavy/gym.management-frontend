@@ -30,126 +30,126 @@ import { PagoProducto } from '../models/pago-producto.model';
     FormsModule
   ],
   template: `
-    <h2 mat-dialog-title style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">NUEVO PAGO</h2>
-<form [formGroup]="pagoForm" (ngSubmit)="onSubmit()">
-  <mat-dialog-content style="padding: 20px;">
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Tipo de Comprador</mat-label>
-      <mat-select formControlName="tipoComprador" (selectionChange)="onTipoCompradorChange($event)">
-        <mat-option value="Socio">Socio</mat-option>
-        <mat-option value="Externo">Externo</mat-option>
-      </mat-select>
-    </mat-form-field>
+    <h2 mat-dialog-title>Nuevo Pago</h2>
+    <mat-dialog-content>
+      <form [formGroup]="pagoForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Tipo de Comprador</mat-label>
+          <mat-select formControlName="tipoComprador" (selectionChange)="onTipoCompradorChange($event)">
+            <mat-option value="Socio">Socio</mat-option>
+            <mat-option value="Externo">Externo</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-    <div *ngIf="pagoForm.get('tipoComprador')?.value === 'Socio'">
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Buscar Socio</mat-label>
-        <input matInput (input)="buscarSocio($event)" placeholder="Ingrese el Nombre/Apellido del Socio">
-      </mat-form-field>
+        <div *ngIf="pagoForm.get('tipoComprador')?.value === 'Socio'">
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Buscar Socio</mat-label>
+            <input matInput (input)="buscarSocio($event)" placeholder="Ingrese el Nombre/Apellido del Socio">
+          </mat-form-field>
 
-      <mat-list *ngIf="sociosFiltrados.length > 0">
-        <mat-list-item *ngFor="let socio of sociosFiltrados | slice:0:10" (click)="seleccionarSocio(socio)">
-          {{ socio.nombre }} {{ socio.apellidos }}
-        </mat-list-item>
-      </mat-list>
+         <!-- Mostrar la lista solo si hay resultados filtrados y limitar a 10 -->
+          <mat-list *ngIf="sociosFiltrados.length > 0">
+            <mat-list-item *ngFor="let socio of sociosFiltrados | slice:0:10" (click)="seleccionarSocio(socio)">
+              {{ socio.nombre }} {{ socio.apellidos }}
+            </mat-list-item>
+          </mat-list>
 
-      <div *ngIf="sociosFiltrados.length === 0 && pagoForm.get('nombreComprador')?.value.trim() === ''" class="no-results">
-        No se encontraron socios con ese nombre/apellido.
-      </div>
-    </div>
-
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Nombre del Comprador</mat-label>
-      <input matInput 
-            formControlName="nombreComprador" 
-            [attr.placeholder]="pagoForm.get('tipoComprador')?.value === 'Socio' ? 'Socio Seleccionado' : 'Ingrese el Nombre del Comprador'"
-            [readonly]="pagoForm.get('tipoComprador')?.value === 'Socio'">
-    </mat-form-field>
-
-    <div class="form-section">
-      <h4>Productos Seleccionados:</h4>
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Buscar Producto</mat-label>
-        <input matInput (input)="buscarProducto($event)" placeholder="Ingrese el nombre del producto">
-      </mat-form-field>
-
-      <mat-list>
-        <mat-list-item *ngFor="let producto of productosFiltrados" (click)="seleccionarProducto(producto)">
-          {{producto.nombre}} - Precio: {{producto.precio}} - Stock: {{producto.cantidad}}
-        </mat-list-item>
-      </mat-list>
-
-      <div *ngFor="let producto of productosSeleccionados; let i = index" class="producto-list-item">
-        <span>{{producto.nombre}} (x{{producto.cantidad}})</span>
-        <div class="cantidad-controls">
-          <button mat-icon-button color="primary" (click)="ajustarCantidad(i, 1, $event)">
-            <mat-icon>add</mat-icon>
-          </button>
-          <button mat-icon-button color="warn" [disabled]="producto.cantidad <= 1" (click)="ajustarCantidad(i, -1, $event)">
-            <mat-icon>remove</mat-icon>
-          </button>
-          <button mat-icon-button color="warn" (click)="eliminarProducto(i)">
-            <mat-icon>delete</mat-icon>
-          </button>
+          <!-- Mensaje si no hay resultados -->
+          <div *ngIf="sociosFiltrados.length === 0 && pagoForm.get('nombreComprador')?.value.trim() === ''" class="no-results">
+            No se encontraron socios con ese nombre/apellido.
+          </div>
         </div>
-      </div>
-    </div>
 
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Descuento (%)</mat-label>
-      <input matInput formControlName="descuento" type="number" placeholder="Ingrese el % de descuento" (input)="actualizarImporteTotal()" min="0" max="100">
-    </mat-form-field>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Nombre del Comprador</mat-label>
+          <input matInput 
+                formControlName="nombreComprador" 
+                [attr.placeholder]="pagoForm.get('tipoComprador')?.value === 'Socio' ? 'Socio Seleccionado' : 'Ingrese el Nombre del Comprador'"
+                [readonly]="pagoForm.get('tipoComprador')?.value === 'Socio'"
+                (input)="buscarSocio($event)">
+        </mat-form-field>
 
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Importe Total (con Descuento)</mat-label>
-      <input matInput [value]="importeConDescuento | number:'1.2-2'" placeholder="Importe con descuento" readonly>
-    </mat-form-field>
+        <div class="form-section">
+          <h4>Productos Seleccionados:</h4>
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Buscar Producto</mat-label>
+            <input matInput (input)="buscarProducto($event)" placeholder="Ingrese el nombre del producto">
+          </mat-form-field>
+         <mat-list>
+          <mat-list-item *ngFor="let producto of productosFiltrados" (click)="seleccionarProducto(producto)">
+            {{producto.nombre}} - Precio: {{producto.precio}} - Stock: {{producto.cantidad}}
+          </mat-list-item>
+        </mat-list>
 
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Estado</mat-label>
-      <mat-select formControlName="estado" (selectionChange)="onEstadoChange($event)">
-        <mat-option value="Pagado">Pagado</mat-option>
-        <mat-option value="Pendiente">Pendiente</mat-option>
-      </mat-select>
-    </mat-form-field>
+          <div *ngFor="let producto of productosSeleccionados; let i = index" class="producto-list-item">
+            <span>{{producto.nombre}} (x{{producto.cantidad}})"</span>
+            <div class="cantidad-controls">
+              <button mat-icon-button color="primary" (click)="ajustarCantidad(i, 1, $event)">
+                <mat-icon>add</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" [disabled]="producto.cantidad <= 1" (click)="ajustarCantidad(i, -1, $event)">
+                <mat-icon>remove</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="eliminarProducto(i)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+          </div>
 
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Fecha de Pago</mat-label>
-      <input matInput formControlName="fechaPago" placeholder="Ingrese la Fecha de Pago (dd/mm/yyyy)" [disabled]="pagoForm.get('estado')?.value !== 'PAGADO'">
-    </mat-form-field>
 
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Observaciones</mat-label>
-      <textarea matInput formControlName="observaciones" placeholder="Ingrese las Observaciones"></textarea>
-    </mat-form-field>
-  </mat-dialog-content>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Descuento (%)</mat-label>
+          <input matInput formControlName="descuento" type="number" placeholder="Ingrese el % de descuento" (input)="actualizarImporteTotal()" min="0" max="100">
+        </mat-form-field>
 
-  <mat-dialog-actions align="end" style="padding: 16px;">
-    <button mat-raised-button color="primary" type="submit" [disabled]="!pagoForm.valid" style="background-color: #800000; color: white;">Guardar</button>
-    <button mat-button mat-dialog-close>Cancelar</button>
-  </mat-dialog-actions>
-</form>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Importe Total (con Descuento)</mat-label>
+          <input matInput [value]="importeConDescuento | number:'1.2-2'" placeholder="Importe con descuento" readonly>
+        </mat-form-field>
 
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Estado</mat-label>
+          <mat-select formControlName="estado" (selectionChange)="onEstadoChange($event)">
+            <mat-option value="Pagado">Pagado</mat-option>
+            <mat-option value="Pendiente">Pendiente</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Fecha de Pago</mat-label>
+          <input matInput formControlName="fechaPago" placeholder="Ingrese la Fecha de Pago (dd/mm/yyyy)" [disabled]="pagoForm.get('estado')?.value !== 'PAGADO'">
+        </mat-form-field>
+
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Observaciones</mat-label>
+          <textarea matInput formControlName="observaciones" placeholder="Ingrese las Observaciones"></textarea>
+        </mat-form-field>
+
+        <div mat-dialog-actions>
+          <button mat-button type="submit" [disabled]="!pagoForm.valid">Guardar</button>
+          <button mat-button mat-dialog-close>Cancelar</button>
+        </div>
+      </form>
+    </mat-dialog-content>
   `,
   styles: [`
-
     .form-section {
       margin-bottom: 24px;
     }
-
     .producto-list-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-
     .producto-list-item input {
       width: 60px;
       margin-left: 16px;
     }
-
     mat-list {
-      max-height: 200px; 
+      max-height: 200px; /* Puedes ajustar la altura según sea necesario */
+      overflow-y: auto;  /* Permite el desplazamiento vertical */
     }
 
     .no-results {
@@ -158,36 +158,6 @@ import { PagoProducto } from '../models/pago-producto.model';
       text-align: center;
       padding: 10px;
     }
-
-    @media (max-width: 1000px) {
-        mat-dialog-container {
-          width: 80vw;
-          padding: 10px;
-        }
-
-        .full-width {
-          width: 100%;
-        }
-
-        mat-dialog-actions button {
-          width: 100%;
-          margin-top: 10px;
-          gap: 20px;
-        }
-      }
-
-      button[mat-button], button[mat-raised-button] {
-        font-size: 14px;
-        border-radius: 4px;
-        padding: 8px 16px;
-      }
-
-      button[mat-button] {
-        background-color: transparent;
-        color: black;
-      }
-
-
   `],
 })
 export class PagosProductosComponent implements OnInit {
@@ -224,6 +194,7 @@ export class PagosProductosComponent implements OnInit {
     this.productoService.getProductos().subscribe({
       next: (productos: any[]) => {
         this.productos = productos;
+        console.log('Productos cargados:', this.productos); // Log para confirmar los productos
       },
       error: (err: any) => console.error('Error al cargar productos', err),
     });
@@ -232,6 +203,7 @@ export class PagosProductosComponent implements OnInit {
     this.miembroService.getMiembros().subscribe({
       next: (miembros: any) => {
         this.socios = miembros;
+        console.log('Miembros cargados:', this.socios); // Log para confirmar los miembros
       },
       error: (err: any) => console.error('Error al cargar miembros', err),
     });

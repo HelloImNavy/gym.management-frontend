@@ -23,6 +23,7 @@ import { AuthService } from '../auth/auth.service';
   ],
   template: `
     <div class="login-container">
+      <h1 class="title">GIMNASIO ATHOS</h1>
       <mat-card class="login-card">
         <mat-card-header>
           <mat-card-title>Iniciar Sesión</mat-card-title>
@@ -39,11 +40,6 @@ import { AuthService } from '../auth/auth.service';
               <input matInput type="password" formControlName="password" required>
             </mat-form-field>
 
-            <div class="credentials-info">
-              <p><strong>Usuario de prueba:</strong> admin</p>
-              <p><strong>Contraseña:</strong> admin123</p>
-            </div>
-
             <button mat-raised-button color="primary" type="submit" [disabled]="!loginForm.valid">
               Iniciar Sesión
             </button>
@@ -51,38 +47,56 @@ import { AuthService } from '../auth/auth.service';
         </mat-card-content>
       </mat-card>
     </div>
+
   `,
   styles: [`
+    
     .login-container {
       height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      background-color: #f5f5f5;
+      background-color: #671a3b; 
     }
+
+    .title {
+      color: #ffffff; 
+      font-size: 54px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
     .login-card {
       width: 100%;
       max-width: 400px;
       padding: 20px;
     }
+    
     form {
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
+    
     mat-card-header {
       margin-bottom: 20px;
     }
+    
     .credentials-info {
       background-color: #e3f2fd;
       padding: 10px;
       border-radius: 4px;
       margin-bottom: 16px;
     }
+    
     .credentials-info p {
       margin: 5px 0;
       font-size: 14px;
     }
+
+
   `]
 })
 export class LoginComponent {
