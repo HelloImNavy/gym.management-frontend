@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [ReactiveFormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule, CommonModule],
   template: `
-    <h2 mat-dialog-title>Editar Actividad</h2>
+    <h2 mat-dialog-title>EDITAR ACTIVIDAD</h2>
     <form [formGroup]="actividadForm" (ngSubmit)="onSubmit()">
       <mat-dialog-content>
         <mat-form-field appearance="fill" class="full-width">
@@ -44,8 +44,8 @@ import { CommonModule } from '@angular/common';
       </mat-dialog-content>
 
       <mat-dialog-actions align="end">
+        <button mat-raised-button color="primary" type="submit" style="background-color: #800000; color: white;" [disabled]="actividadForm.invalid">Guardar</button>
         <button mat-button (click)="onCancel()">Cancelar</button>
-        <button mat-raised-button color="primary" type="submit" [disabled]="actividadForm.invalid">Guardar</button>
       </mat-dialog-actions>
     </form>
   `,

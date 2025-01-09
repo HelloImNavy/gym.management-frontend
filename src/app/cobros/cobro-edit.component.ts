@@ -34,134 +34,116 @@ import { DateAdapter } from '@angular/material/core';
     MatCardModule
   ],
   template: `
-    <mat-card class="form-card">
-      <h2 class="form-title">Editar Cobro</h2>
-      <form [formGroup]="cobroForm" (ngSubmit)="onSubmit()">
-        
-        <div class="form-field">
-          <mat-form-field appearance="fill" class="full-width">
-            <mat-label>Concepto:</mat-label>
-            <input matInput formControlName="concepto" required>
-          </mat-form-field>
-        </div>
+    <h2 mat-dialog-title>EDITAR COBRO</h2>
+<form [formGroup]="cobroForm" (ngSubmit)="onSubmit()">
+  <mat-dialog-content>
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Concepto</mat-label>
+      <input matInput formControlName="concepto" placeholder="Concepto del cobro" required />
+      <mat-error *ngIf="cobroForm.controls['concepto'].hasError('required')">Este campo es obligatorio.</mat-error>
+    </mat-form-field>
 
-        <div class="form-field">
-          <mat-form-field appearance="fill" class="full-width">
-            <mat-label>Monto:</mat-label>
-            <input matInput formControlName="monto" type="number" required>
-          </mat-form-field>
-        </div>
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Monto</mat-label>
+      <input matInput formControlName="monto" type="number" placeholder="Monto del cobro" required />
+      <mat-error *ngIf="cobroForm.controls['monto'].hasError('required')">Este campo es obligatorio.</mat-error>
+    </mat-form-field>
 
-        <div class="form-field">
-          <mat-form-field appearance="fill" class="full-width">
-            <mat-label>Estado:</mat-label>
-            <mat-select formControlName="estado" (selectionChange)="onEstadoChange()" required>
-              <mat-option value="PENDIENTE">Pendiente</mat-option>
-              <mat-option value="PAGADO">Pagado</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Estado</mat-label>
+      <mat-select formControlName="estado" (selectionChange)="onEstadoChange()" required>
+        <mat-option value="PENDIENTE">Pendiente</mat-option>
+        <mat-option value="PAGADO">Pagado</mat-option>
+      </mat-select>
+      <mat-error *ngIf="cobroForm.controls['estado'].hasError('required')">Este campo es obligatorio.</mat-error>
+    </mat-form-field>
 
-        <div class="form-field">
-          <mat-form-field appearance="fill" class="full-width">
-            <mat-label>Fecha de Pago:</mat-label>
-            <input matInput [matDatepicker]="picker" formControlName="fechaPago" [disabled]="cobroForm.get('estado')?.value === 'PENDIENTE'">
-            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
-        </div>
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Fecha de Pago</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="fechaPago" [disabled]="cobroForm.get('estado')?.value === 'PENDIENTE'" />
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+  </mat-dialog-content>
 
-        <div class="form-buttons">
-          <button mat-button type="submit" [disabled]="cobroForm.invalid" class="submit-btn">Guardar</button>
-          <button mat-button type="button" (click)="onCancel()" class="cancel-btn">Cancelar</button>
-        </div>
-      </form>
-    </mat-card>
+  <mat-dialog-actions align="end">
+    <button mat-raised-button color="primary" type="submit" [disabled]="cobroForm.invalid" style="background-color: #800000; color: white;">Guardar</button>
+    <button mat-button (click)="onCancel()">Cancelar</button>
+  </mat-dialog-actions>
+</form>
+`,
+  styles: [
+    `
+    .full-width {
+      width: 100%;
+    }
 
-    <style>
-      /* General card styling */
-      .form-card {
-        width: 500px;
-        padding: 20px;
-        margin: 50px auto;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        background-color: #ffffff;
+    mat-dialog-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    mat-form-field {
+      margin-bottom: 16px;
+      width: 100%;
+    }
+
+    mat-dialog-actions {
+      padding: 16px;
+    }
+
+    button[mat-button] {
+      margin-right: 10px;
+    }
+
+    mat-error {
+      font-size: 12px;
+      color: red;
+    }
+
+    mat-raised-button {
+      margin-top: 20px;
+    }
+
+    mat-dialog-content {
+      padding: 20px;
+    }
+
+    @media (max-width: 768px) {
+      mat-dialog-container {
+        width: 80vw;
+        padding: 10px;
       }
 
-      /* Title of the form */
-      .form-title {
-        text-align: center;
-        margin-bottom: 20px;
-        font-size: 24px;
-        color: #3f51b5;
-        font-weight: 600;
-      }
-
-      /* Full-width form field */
       .full-width {
         width: 100%;
       }
 
-      /* Form field wrappers */
-      .form-field {
-        margin-bottom: 15px;
+      mat-dialog-actions button {
+        width: 100%;
+        margin-top: 10px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      mat-dialog-container {
+        width: 95vw;
+        padding: 5px;
       }
 
-      /* Button container styling */
-      .form-buttons {
-        display: flex;
-        justify-content: space-between;
-        gap: 15px;
+      .mat-form-field input,
+      .mat-form-field select {
+        font-size: 14px;
       }
 
-      /* Submit button styling */
-      .submit-btn {
-        background-color: #4caf50;
-        color: white;
-        width: 48%;
-        padding: 10px 0;
-        font-size: 16px;
-        font-weight: 600;
+      button {
+        font-size: 14px;
       }
+    }
 
-      .submit-btn:hover {
-        background-color: #45a049;
-      }
-
-      /* Cancel button styling */
-      .cancel-btn {
-        background-color: #f44336;
-        color: white;
-        width: 48%;
-        padding: 10px 0;
-        font-size: 16px;
-        font-weight: 600;
-      }
-
-      .cancel-btn:hover {
-        background-color: #e53935;
-      }
-
-      /* Responsive Design for smaller screens */
-      @media (max-width: 600px) {
-        .form-card {
-          width: 90%;
-          margin: 20px;
-        }
-
-        .form-buttons {
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        .submit-btn, .cancel-btn {
-          width: 100%;
-        }
-      }
-    </style>
-  `,
-
+  `
+  ]
 })
 export class EditCobroFormComponent implements OnInit {
   cobroForm!: FormGroup;

@@ -23,62 +23,69 @@ import { FormsModule } from '@angular/forms';
     FormsModule
   ],
   template: `
-<h2>{{ data ? 'EDITAR PRODUCTOS' : 'NUEVO PRODUCTO' }}</h2>
-<form [formGroup]="productoForm" (ngSubmit)="onSubmit()">
-  <mat-form-field appearance="fill">
-    <mat-label>Nombre</mat-label>
-    <input matInput formControlName="nombre" required>
-  </mat-form-field>
-  <mat-form-field appearance="fill">
-    <mat-label>Precio (€)</mat-label>
-    <input matInput [(ngModel)]="precio" (input)="onPrecioInput($event)" required>
-  </mat-form-field>
-  <mat-form-field appearance="fill">
-    <mat-label>Cantidad</mat-label>
-    <input matInput formControlName="cantidad" type="number" required>
-  </mat-form-field>
-  <mat-form-field appearance="fill">
-    <mat-label>Categoría</mat-label>
-    <mat-select formControlName="categoria" required>
-      <mat-option value="Suplementación">Suplementación</mat-option>
-      <mat-option value="Ropa">Ropa</mat-option>
-      <mat-option value="Alimentos">Alimentos</mat-option>
-      <mat-option value="Bebidas">Bebidas</mat-option>
-      <mat-option value="Accesorios">Accesorios</mat-option>
-    </mat-select>
-  </mat-form-field>
-  <div class="form-actions">
-    <button mat-raised-button color="primary" type="submit" [disabled]="!productoForm.valid">Guardar</button>
-    <button mat-button color="warn" (click)="onCancel()">Cancelar</button>
-  </div>
-</form>
+    <h2>{{ data ? 'EDITAR PRODUCTOS' : 'NUEVO PRODUCTO' }}</h2>
+    <form [formGroup]="productoForm" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="fill">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre" required>
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Precio (€)</mat-label>
+        <input matInput [(ngModel)]="precio" (input)="onPrecioInput($event)" required>
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Cantidad</mat-label>
+        <input matInput formControlName="cantidad" type="number" required>
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Categoría</mat-label>
+        <mat-select formControlName="categoria" required>
+          <mat-option value="Suplementación">Suplementación</mat-option>
+          <mat-option value="Ropa">Ropa</mat-option>
+          <mat-option value="Alimentos">Alimentos</mat-option>
+          <mat-option value="Bebidas">Bebidas</mat-option>
+          <mat-option value="Accesorios">Accesorios</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <div class="form-actions">
+        <button mat-raised-button class="granate-btn" type="submit" [disabled]="!productoForm.valid">Guardar</button>
+        <button mat-button (click)="onCancel()">Cancelar</button>
+      </div>
+    </form>
   `,
   styles: [
-    `h2 {
-      text-align: center;
-      margin-bottom: 20px; 
+    `
+    h2 {
+      font-size: 1.5rem;
+      text-align: left;
+      margin-left: 20px; 
       margin-top: 10px; 
     }
-    
+
     form {
       display: flex;
       flex-direction: column;
       gap: 20px;
       margin: 20px; 
     }
-    
+
     .mat-form-field {
       width: 100%;
       margin-bottom: 10px; 
     }
-    
+
     .form-actions {
       display: flex;
-      justify-content: flex-end;
+      justify-content: flex-end; 
       gap: 10px;
       margin-top: 20px; 
-    }    
-    
+    }
+
+    .granate-btn {
+      background-color: #800000; 
+      color: white;
+    }
+
     `
   ]
 })
