@@ -37,37 +37,41 @@ import { MatSortModule } from '@angular/material/sort';
     MatSortModule
   ],
   template: `
-    <h2>SOCIOS</h2>
-    <button mat-raised-button 
-            style="background-color: #333; color: white; float: right;" 
-            (click)="abrirFormularioNuevoMiembro()">
-      Nuevo miembro
-    </button>
-
-    <div class="filter-container">
-      <mat-form-field appearance="fill" class="filter-field">
-        <mat-label>Filtrar por Nombre o Apellidos</mat-label>
-        <input matInput (keyup)="aplicarFiltros()" [(ngModel)]="filterValue" placeholder="Escriba un nombre o apellido">
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" class="filter-field">
-        <mat-label>Filtrar por</mat-label>
-        <mat-select [(ngModel)]="statusFilter" (selectionChange)="aplicarFiltros()">
-          <mat-option value="all">Todos</mat-option>
-          <mat-option value="active">Activos</mat-option>
-          <mat-option value="inactive">Inactivos</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <!-- Botón para resetear filtros -->
-      <button mat-raised-button color="accent" (click)="resetearFiltros()">Resetear Filtros</button>
-    </div>
-
     <div class="container">
+      <div class="header">
+        <h2>SOCIOS</h2>
+        <button mat-raised-button 
+                style="background-color: #333; color: white; float: right;" 
+                (click)="abrirFormularioNuevoMiembro()">
+          Nuevo miembro
+        </button>
+      </div>
+
+      <div class="filters">
+        <mat-form-field appearance="fill" class="filter-field" >
+          <mat-label>Filtrar por Nombre o Apellidos</mat-label>
+          <input matInput (keyup)="aplicarFiltros()" [(ngModel)]="filterValue" placeholder="Escriba un nombre o apellido">
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="filter-field">
+          <mat-label>Filtrar por</mat-label>
+          <mat-select [(ngModel)]="statusFilter" (selectionChange)="aplicarFiltros()">
+            <mat-option value="all">Todos</mat-option>
+            <mat-option value="active">Activos</mat-option>
+            <mat-option value="inactive">Inactivos</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Botón para resetear filtros -->
+        <button mat-raised-button style="height: 55px;" color=#800000 (click)="resetearFiltros()">Resetear Filtros</button>
+      </div>
+
+    
       <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
         <!-- Nueva columna de estado -->
         <ng-container matColumnDef="estado">
-          <th mat-header-cell *matHeaderCellDef style="width: 50px;">Estado</th>
+          <th mat-header-cell *matHeaderCellDef style="width: 50px;"></th>
           <td mat-cell *matCellDef="let miembro">
             <mat-icon *ngIf="!miembro.fechaBaja" color="primary" style="color: green;">person</mat-icon>
             <mat-icon *ngIf="miembro.fechaBaja" color="warn" style="color: red;">person_off</mat-icon>
@@ -109,28 +113,90 @@ import { MatSortModule } from '@angular/material/sort';
         <tr mat-row *matRowDef="let row; columns: columnas;"></tr>
       </table>
       <mat-paginator [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
-    </div>
+    
+  </div>
+
   `,
   styles: [`
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+   
     .container {
       padding: 20px;
+      margin: 0 auto;
     }
+
+   
     table {
       width: 100%;
-      margin-top: 20px;
-      table-layout: fixed; /* Evita que la tabla cambie de tamaño */
+      table-layout: fixed; 
+      overflow-x: auto;
     }
-    button[mat-raised-button] {
-      margin-bottom: 20px;
-    }
-    .filter-container {
+
+    .filters {
       display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 15px; 
+      justify-content: left;
+      align-items: top;
     }
+
     .filter-field {
-      width: 250px;
+      width: 30%;
+
     }
+
+    .filter-group {
+      display: flex;
+      gap: 15px; 
+    }
+
+    button.mat-icon-button {
+      margin: 0 5px;
+    }
+
+
+    @media (max-width: 768px) {
+   
+      .filter-container {
+        flex-direction: column; 
+        align-items: flex-start;
+      }
+     
+      table {
+        font-size: 0.8em; 
+      }
+      
+      button[mat-raised-button] {
+        font-size: 0.9em;
+      }
+      
+      button.mat-icon-button {
+        width: 100%;
+        margin-bottom: 50px;
+      }
+      
+      mat-icon {
+        font-size: 1.2em;
+      }
+    }
+
+    @media (max-width: 480px) {
+      
+      table {
+        font-size: 0.75em; 
+      }
+      
+      button[mat-raised-button] {
+        width: 100%; 
+        font-size: 1em; 
+      }
+    }
+
   `],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
@@ -177,22 +243,19 @@ export class MiembroListaComponent implements OnInit {
       );
     }
 
-    // Filtrar por estado (activo o inactivo)
     if (this.statusFilter === 'active') {
-      filtered = filtered.filter(miembro => !miembro.fechaBaja); // Activos
+      filtered = filtered.filter(miembro => !miembro.fechaBaja); 
     } else if (this.statusFilter === 'inactive') {
-      filtered = filtered.filter(miembro => miembro.fechaBaja); // Inactivos
+      filtered = filtered.filter(miembro => miembro.fechaBaja); 
     }
 
-    // Si el filtro es "Todos", no se aplica ningún filtro de estado
-    this.dataSource.data = filtered;  // Usar filteredMiembros para la tabla
+    this.dataSource.data = filtered;  
   }
 
   resetearFiltros(): void {
-    // Resetear los filtros
     this.filterValue = '';
     this.statusFilter = 'all';
-    this.aplicarFiltros(); // Aplicar los filtros resetados
+    this.aplicarFiltros(); 
   }
 
   eliminarMiembro(id: number | undefined): void {
@@ -220,6 +283,7 @@ export class MiembroListaComponent implements OnInit {
 
   abrirDetallesMiembro(miembro: any): void {
     const dialogRef = this.dialog.open(MiembroDetailComponent, {
+      height: '600px',
       data: miembro
     });
 

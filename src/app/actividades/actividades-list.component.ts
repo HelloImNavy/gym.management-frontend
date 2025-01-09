@@ -10,18 +10,21 @@ import { Actividad } from '../models/actividad.model';
 import { Router } from '@angular/router';
 import { ActividadesEditComponent } from '../actividades/actividades-edit.component';
 import { InscripcionesListComponent } from '../inscripciones/inscripciones-list.component';
+import { ActividadFormComponent } from '../actividades/actividad-form.component';
 
 @Component({
   selector: 'app-actividades-list',
   standalone: true,
   imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, RouterModule],
   template: `
-    <h2>ACTIVIDADES</h2>
-    <button mat-raised-button 
-            style="background-color: #333; color: white; float: right;" 
-            (click)="nuevaActividad()">Nueva actividad</button>
-
-    <div class="container">
+  <div class="container">
+    <div class="header">
+      <h2>ACTIVIDADES</h2>
+      <button mat-raised-button 
+              style="background-color: #333; color: white; float: right;" 
+              (click)="nuevaActividad()">Nueva actividad</button>
+    </div>
+    
       <table mat-table [dataSource]="actividades" class="mat-elevation-z8">
         <ng-container matColumnDef="nombre">
           <th mat-header-cell *matHeaderCellDef>Nombre</th>
@@ -39,19 +42,22 @@ import { InscripcionesListComponent } from '../inscripciones/inscripciones-list.
         </ng-container>
 
         <ng-container matColumnDef="acciones">
-          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+          <th mat-header-cell *matHeaderCellDef style="text-align: center" >Acciones</th>
           <td mat-cell *matCellDef="let actividad">
-            <button mat-icon-button color="primary" (click)="editarActividad(actividad)">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="eliminarActividad(actividad.id)">
-              <mat-icon>delete</mat-icon>
-            </button>
-            <button mat-icon-button color="accent" (click)="verInscripciones(actividad.id)">
-              <mat-icon>group</mat-icon>
-            </button>
+            <div style="display: flex; gap: 10px; margin-left: 50px">
+              <button mat-icon-button color="primary" (click)="editarActividad(actividad)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="eliminarActividad(actividad.id)">
+                <mat-icon>delete</mat-icon>
+              </button>
+              <button mat-icon-button color="accent" (click)="verInscripciones(actividad.id)">
+                <mat-icon>group</mat-icon>
+              </button>
+            </div>
           </td>
         </ng-container>
+
 
         <tr mat-header-row *matHeaderRowDef="columnas"></tr>
         <tr mat-row *matRowDef="let row; columns: columnas;"></tr>
@@ -61,27 +67,43 @@ import { InscripcionesListComponent } from '../inscripciones/inscripciones-list.
   styles: [`
     .container {
       padding: 20px;
+      max-width: 700px;
+      margin: 0 auto;
     }
+
     table {
       width: 100%;
       margin-top: 20px;
+      table-layout: fixed; 
     }
-    button[mat-raised-button] {
-      margin-bottom: 20px;
+
+    .mat-header-cell, .mat-cell {
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
     }
+
+    .mat-header-cell:last-child, .mat-cell:last-child {
+      text-align: right; 
+    }
+
     .mat-header-cell {
       background-color: #f5f5f5;
       font-weight: bold;
     }
-    .mat-cell {
-      text-align: center;
-    }
+
     .mat-icon-button {
       margin: 0 5px;
     }
-    .mat-elevation-z8 {
-      border-radius: 8px;
-    }
+
+    .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
   `]
 })
 export class ActividadesListComponent implements OnInit {
@@ -89,10 +111,9 @@ export class ActividadesListComponent implements OnInit {
   columnas: string[] = ['nombre', 'costo', 'cupo', 'acciones'];
 
   constructor(
-    private actividadService: ActividadService, 
-    private router: Router, 
+    private actividadService: ActividadService,
     private dialog: MatDialog
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.cargarActividades();
@@ -105,18 +126,34 @@ export class ActividadesListComponent implements OnInit {
   }
 
   nuevaActividad() {
-    this.router.navigate(['/dashboard/actividades/nueva']);
+    const dialogRef = this.dialog.open(ActividadFormComponent, {
+      width: '90vw',       
+      height: 'auto',      
+      maxWidth: '450px'
+    });
+  
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.cargarActividades();
+      } else {
+        console.log('Actividad no guardada');
+      }
+    });
   }
+  
+  
 
   editarActividad(actividad: Actividad) {
     const dialogRef = this.dialog.open(ActividadesEditComponent, {
-      width: '600px',
+      width: '90vw',       
+      height: 'auto',      
+      maxWidth: '450px',
       data: actividad
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.cargarActividades();  
+        this.cargarActividades();
       }
     });
   }
@@ -135,5 +172,5 @@ export class ActividadesListComponent implements OnInit {
       data: { actividadId: id }
     });
   }
-  
+
 }

@@ -28,85 +28,101 @@ import { forkJoin } from 'rxjs';
     MatSelectModule,
   ],
   template: `
-    <div class="form-container">
-      <h2>Nuevo Socio</h2>
-      <form [formGroup]="miembroForm" (ngSubmit)="onSubmit()">
-        <mat-form-field appearance="fill">
-          <mat-label>Nombre</mat-label>
-          <input matInput formControlName="nombre" required />
-        </mat-form-field>
-
-        <mat-form-field appearance="fill">
-          <mat-label>Apellidos</mat-label>
-          <input matInput formControlName="apellidos" />
-        </mat-form-field>
-
-        <mat-form-field appearance="fill">
-          <mat-label>Dirección</mat-label>
-          <input matInput formControlName="direccion" />
-        </mat-form-field>
-
-        <mat-form-field appearance="fill">
-          <mat-label>Fecha de Nacimiento</mat-label>
-          <input matInput formControlName="fechaNacimiento" type="date" required />
-        </mat-form-field>
-
-        <mat-form-field appearance="fill">
-          <mat-label>Teléfono</mat-label>
-          <input matInput formControlName="telefono" />
-        </mat-form-field>
-
-        <mat-form-field appearance="fill">
-          <mat-label>Fecha de Alta</mat-label>
-          <input matInput formControlName="fechaAlta" type="date" />
-        </mat-form-field>
-
-        <mat-form-field appearance="fill">
-          <mat-label>Actividades</mat-label>
-          <mat-select formControlName="actividades" multiple>
-            <mat-option *ngFor="let actividad of actividades" [value]="actividad.id">
-              {{ actividad.nombre }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill">
-          <mat-label>Observaciones</mat-label>
-          <textarea matInput formControlName="observaciones"></textarea>
-        </mat-form-field>
-
-        <div class="form-actions">
-          <button mat-raised-button color="primary" type="submit" [disabled]="!miembroForm.valid">
-            Guardar
-          </button>
-          <button mat-button color="warn" (click)="onCancel()">Cancelar</button>
-        </div>
-      </form>
+<div class="form-container">
+  <h2>NUEVO SOCIO</h2>
+  <form [formGroup]="miembroForm" (ngSubmit)="onSubmit()">
+    <div class="form-row">
+      <mat-form-field appearance="fill">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre" required />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Apellidos</mat-label>
+        <input matInput formControlName="apellidos" />
+      </mat-form-field>
     </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="fill">
+        <mat-label>Dirección</mat-label>
+        <input matInput formControlName="direccion" />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Fecha de Nacimiento</mat-label>
+        <input matInput formControlName="fechaNacimiento" type="date" required />
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="fill">
+        <mat-label>Teléfono</mat-label>
+        <input matInput formControlName="telefono" />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Fecha de Alta</mat-label>
+        <input matInput formControlName="fechaAlta" type="date" />
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="fill">
+        <mat-label>Actividades</mat-label>
+        <mat-select formControlName="actividades" multiple>
+          <mat-option *ngFor="let actividad of actividades" [value]="actividad.id">
+            {{ actividad.nombre }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Observaciones</mat-label>
+        <textarea matInput formControlName="observaciones"></textarea>
+      </mat-form-field>
+    </div>
+
+    <div class="form-actions">
+      <button mat-raised-button color="primary" type="submit" [disabled]="!miembroForm.valid">
+        Guardar
+      </button>
+      <button mat-button color="warn" (click)="onCancel()">Cancelar</button>
+    </div>
+  </form>
+</div>
+
   `,
   styles: [`
-    .form-container {
-      padding: 30px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      width: 100%;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-    .form-actions {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 16px;
-    }
-    ::ng-deep .mat-dialog-container {
-      z-index: 1050 !important;  
-    }
+.form-container {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.mat-form-field {
+  flex: 1;
+  margin-bottom: 20px; 
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+
   `],
 })
 export class MiembrosFormComponent implements OnInit {
   miembroForm: FormGroup;
-  actividades: any[] = []; // Actividades se cargan desde el servicio.
+  actividades: any[] = []; 
 
   constructor(
     private fb: FormBuilder,
@@ -124,7 +140,7 @@ export class MiembrosFormComponent implements OnInit {
       telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
       actividades: [[], Validators.required],
       observaciones: [''],
-      fechaAlta: [new Date().toISOString().split('T')[0]], // Fecha actual por defecto
+      fechaAlta: [new Date().toISOString().split('T')[0]], 
     });
   }
 

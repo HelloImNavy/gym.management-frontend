@@ -39,7 +39,8 @@ import { EditCobroFormComponent } from './cobro-edit.component';
     RouterModule
   ],
   template: `
-    <h2>Listado de Cobros</h2>
+  <div class="container_global">
+    <h2>LISTADO DE COBROS</h2>
 
     <div class="filter-container">
       <!-- Filtro por fecha de inicio -->
@@ -71,33 +72,47 @@ import { EditCobroFormComponent } from './cobro-edit.component';
       </mat-form-field>
 
       <!-- Botón para resetear los filtros -->
-      <button mat-raised-button color="accent" (click)="resetFilters()">Resetear Filtros</button>
+      <button mat-raised-button style="background-color: #333; color: white;" (click)="resetFilters()">Resetear Filtros</button>
     </div>
 
     <div class="container">
       <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
-        <ng-container matColumnDef="fecha">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha </th>
+
+        <!-- Columna Fecha Creación -->
+        <ng-container matColumnDef="fechaCreacion">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Creación </th>
           <td mat-cell *matCellDef="let cobro" [ngClass]="{'pendiente': cobro.estado === 'PENDIENTE', 'pagado': cobro.estado === 'PAGADO'}">
-            {{ cobro.fecha | date: 'dd/MM/yyyy' }} 
+            {{ cobro.fechaCreacion | date: 'dd/MM/yyyy' }} 
           </td>
         </ng-container>
 
+        <!-- Columna Fecha Pago -->
+        <ng-container matColumnDef="fechaPago">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Pago </th>
+          <td mat-cell *matCellDef="let cobro">
+            {{ cobro.fechaPago ? (cobro.fechaPago | date: 'dd/MM/yyyy') : 'Sin registrar' }}
+          </td>
+        </ng-container>
+
+        <!-- Columna Nombre Socio -->
         <ng-container matColumnDef="miembro">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Nombre Socio </th>
           <td mat-cell *matCellDef="let cobro">{{ cobro.miembroNombre }} {{ cobro.miembroApellidos }} </td>
         </ng-container>
 
+        <!-- Columna Concepto -->
         <ng-container matColumnDef="concepto">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Concepto </th>
           <td mat-cell *matCellDef="let cobro">{{ cobro.concepto }} </td>
         </ng-container>
 
+        <!-- Columna Importe -->
         <ng-container matColumnDef="monto">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Importe (€) </th>
           <td mat-cell *matCellDef="let cobro">{{ cobro.monto | currency: 'EUR':'symbol':'1.2-2' }} </td>
         </ng-container>
 
+        <!-- Columna Estado -->
         <ng-container matColumnDef="estado">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Estado </th>
           <td mat-cell *matCellDef="let cobro">
@@ -105,10 +120,11 @@ import { EditCobroFormComponent } from './cobro-edit.component';
               {{ cobro.estado }} 
             </span>
             <mat-icon *ngIf="cobro.estado === 'PENDIENTE'" color="warn">remove_circle</mat-icon>
-            <mat-icon *ngIf="cobro.estado === 'PAGADO'" color="primary">check_circle</mat-icon>
+            <mat-icon *ngIf="cobro.estado === 'PAGADO'" class="icon-green">check_circle</mat-icon>
           </td>
         </ng-container>
 
+        <!-- Columna Acciones -->
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef> Acciones </th>
           <td mat-cell *matCellDef="let cobro">
@@ -125,19 +141,23 @@ import { EditCobroFormComponent } from './cobro-edit.component';
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
 
+
       <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+    </div>
     </div>
   `,
   styles: [`  
+
+
     .filter-container {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
+      justify-content: space-between;
     }
-    .container {
-      padding: 20px;
-      margin: 0 auto;
-    }
+  .container_global {
+    padding: 20px;
+    margin: 0 auto;
+  }
     table {
       width: 100%;
       table-layout: fixed;
@@ -161,8 +181,14 @@ import { EditCobroFormComponent } from './cobro-edit.component';
     .mat-elevation-z8 {
       border-radius: 8px;
     }
+
+    .icon-green {
+      color: #4caf50; 
+    }
+
     button[mat-raised-button] {
-      margin-bottom: 20px;
+      width: 170px;
+      height: 60px;
     }
     .mat-icon-button {
       margin: 0 5px;
@@ -186,7 +212,7 @@ import { EditCobroFormComponent } from './cobro-edit.component';
   `]
 })
 export class CobrosListComponent implements OnInit {
-  displayedColumns: string[] = ['fecha', 'miembro', 'concepto', 'monto', 'estado', 'acciones'];
+  displayedColumns: string[] = ['fechaCreacion', 'fechaPago', 'miembro', 'concepto', 'monto', 'estado', 'acciones'];
   startDate: Date | null = null;
   endDate: Date | null = null;
   selectedState: string = 'TODOS';
@@ -208,8 +234,13 @@ export class CobrosListComponent implements OnInit {
       .pipe(
         tap((data: CobroDTO[]) => {
           console.log('Datos de cobros obtenidos:', data);
-          this.cobros = data;
-          this.dataSource.data = data;
+          // Adaptar las propiedades renombradas y añadir fechaPago
+          this.cobros = data.map(cobro => ({
+            ...cobro,
+            fechaCreacion: cobro.fecha, // Renombrar a fechaCreacion
+            fechaPago: cobro.fechaPago // Nueva columna
+          }));
+          this.dataSource.data = this.cobros;
           this.dataSource.sort = this.sort;
           this.dataSource.paginator = this.paginator;
         }),
@@ -218,7 +249,7 @@ export class CobrosListComponent implements OnInit {
           return of([]);
         })
       )
-      .subscribe();
+      .subscribe()
   }
 
   applyFilter() {
@@ -259,7 +290,9 @@ export class CobrosListComponent implements OnInit {
 
   editCobro(cobro: CobroDTO) {
     const dialogRef = this.dialog.open(EditCobroFormComponent, {
-      width: '400px',
+      width: '90vw',       // 90% del ancho de la ventana
+      height: 'auto',      // Ajusta la altura de acuerdo al contenido
+      maxWidth: '600px',   // El ancho máximo será de 600px, pero se adapta en pantallas más pequeñas
       data: { cobro }
     });
 
@@ -269,6 +302,7 @@ export class CobrosListComponent implements OnInit {
       }
     });
   }
+
 
   confirmDelete(cobro: CobroDTO) {
     if (confirm('¿Estás seguro de que deseas eliminar este cobro?')) {

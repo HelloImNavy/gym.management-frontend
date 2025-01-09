@@ -3,9 +3,9 @@ export interface PagoProducto {
   nombreComprador: string;
   tipoComprador: 'socio' | 'externo';
   socioId?: number;
-  productos: string;
+  productos: string[];
   importeTotal: number;
   fechaPago: string;
   estado: 'Pendiente' | 'Pagado';
-  observaciones?: string; 
+  observaciones?: string;
 }

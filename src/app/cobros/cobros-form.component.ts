@@ -50,11 +50,18 @@ import { CobroDTO } from '../models/cobro.model';
         </mat-form-field>
         <mat-form-field appearance="fill">
           <mat-label>Estado</mat-label>
-          <mat-select formControlName="estado">
+          <mat-select formControlName="estado" (selectionChange)="onEstadoChange()">
             <mat-option value="PENDIENTE">Pendiente</mat-option>
             <mat-option value="PAGADO">Pagado</mat-option>
           </mat-select>
         </mat-form-field>
+
+        <!-- Fecha de pago (solo si el estado es PAGADO) -->
+        <mat-form-field *ngIf="cobroForm.get('estado')?.value === 'PAGADO'" appearance="fill">
+          <mat-label>Fecha de Pago</mat-label>
+          <input matInput formControlName="fechaPago" type="date">
+        </mat-form-field>
+
         <button mat-button type="submit" [disabled]="cobroForm.invalid">{{ isEditing ? 'Guardar Cambios' : 'Crear Cobro' }}</button>
       </form>
     </div>
@@ -77,8 +84,27 @@ export class CobroFormComponent {
       concepto: [data?.concepto || '', Validators.required],
       fecha: [data?.fecha || '', Validators.required],
       monto: [data?.monto || '', Validators.required],
-      estado: [data?.estado || 'PENDIENTE', Validators.required]
+      estado: [data?.estado || 'PENDIENTE', Validators.required],
+      fechaPago: [data?.fechaPago || '']  // Agregar campo fechaPago
     });
+
+    // Si estamos editando, y el estado es PENDIENTE, deshabilitar la fechaPago
+    this.onEstadoChange();
+  }
+
+  // Este método se llama cada vez que cambia el estado
+  onEstadoChange() {
+    const estado = this.cobroForm.get('estado')?.value;
+    const fechaPagoControl = this.cobroForm.get('fechaPago');
+
+    if (estado === 'PENDIENTE') {
+      // Si el estado es pendiente, deshabilitamos el campo de fechaPago
+      fechaPagoControl?.disable();
+      fechaPagoControl?.reset(); // Resetear la fechaPago
+    } else {
+      // Si el estado es PAGADO, habilitamos el campo de fechaPago
+      fechaPagoControl?.enable();
+    }
   }
 
   onSubmit() {

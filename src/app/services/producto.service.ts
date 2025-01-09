@@ -10,11 +10,11 @@ export class ProductoService {
   private apiUrl = 'http://localhost:8080/productos';
   private pagosProductosUrl = 'http://localhost:8080/productos/pagos'; // URL para pagos
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // Método para obtener los pagos
+
   getPagos(): Observable<PagoProducto[]> {
-    return this.http.get<PagoProducto[]>(this.pagosProductosUrl); // Devuelve un array de CobroProducto
+    return this.http.get<PagoProducto[]>(this.pagosProductosUrl);
   }
 
   getProductos(): Observable<any[]> {
@@ -33,6 +33,11 @@ export class ProductoService {
     return this.http.delete<any>(`${this.apiUrl}/${id}`);
   }
 
+  restarStock(id: number, cantidad: number): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}/restar-cantidad`, { cantidad });
+  }
+
+
   searchProductos(nombre?: string, categoria?: string): Observable<any[]> {
     let params: any = {};
     if (nombre) params.nombre = nombre;
@@ -40,7 +45,10 @@ export class ProductoService {
     return this.http.get<any[]>(`${this.apiUrl}/buscar`, { params });
   }
 
-  registrarPago(pago: PagoProducto): Observable<PagoProducto> { 
-    return this.http.post<PagoProducto>(`${this.apiUrl}/pagos`, pago); }
-
+  registrarPago(pago: PagoProducto): Observable<PagoProducto> {
+    return this.http.post<PagoProducto>(`${this.apiUrl}/pagos`, pago);
+  }
+  updatePago(id: number, pago: PagoProducto): Observable<PagoProducto> {
+    return this.http.put<PagoProducto>(`${this.pagosProductosUrl}/${id}`, pago);
+  }
 }

@@ -18,8 +18,11 @@ import { ProductoFormComponent } from './producto-form.component';
   template: `
 <div class="container">
   <div class="header">
-    <h2>Inventario de Productos</h2>
-    <button mat-raised-button color="primary" (click)="openProductoForm()">Nuevo Producto</button>
+    <h2>INVENTARIO DE PRODUCTOS</h2>
+    <button mat-raised-button 
+            (click)="openProductoForm()"
+            style="background-color: #333; color: white; float: right;">
+              Nuevo Producto</button>
   </div>
   <div class="filters">
     <mat-form-field appearance="fill" class="filter-field">
@@ -101,6 +104,7 @@ import { ProductoFormComponent } from './producto-form.component';
     margin-top: 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   }
+
   ` ],
 })
 export class ProductoListComponent implements OnInit {

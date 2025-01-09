@@ -1,20 +1,20 @@
-import { Component, Inject, OnInit } from '@angular/core';
+
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MiembroService } from '../services/miembro.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Actividad } from '../models/actividad.model';
 import { CobroDTO } from '../models/cobro.model';
 import { CobrosService } from '../services/cobros.service';
 import { Mes } from '../models/mes.model';
-import { Inscripcion } from '../models/inscripcion.model';
 import { DTOCobro } from '../models/cobroDTO.model';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject } from '@angular/core';
+import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-miembro-detail',
@@ -82,9 +82,9 @@ import { DTOCobro } from '../models/cobroDTO.model';
         <button mat-raised-button color="primary" *ngIf="isConfirmingBaja && !data.fechaBaja" (click)="confirmBaja()">
           Confirmar Baja
         </button>
-        <button mat-raised-button color="accent" *ngIf="data.fechaBaja" (click)="reactivarMiembro()">
+        <button mat-raised-button class="btn-reactivar" *ngIf="data.fechaBaja" (click)="reactivarMiembro()">
           Reactivar
-        </button> 
+        </button>
       </div>
     </div>
 
@@ -92,7 +92,7 @@ import { DTOCobro } from '../models/cobroDTO.model';
     <div class="form-column">
       <!-- Actividades -->
       <section class="activities-section">
-        <h3>Actividades</h3>
+        <h3>ACTIVIDADES</h3>
         <ul>
           <li *ngFor="let inscripcion of data.inscripciones">
             <span *ngIf="!inscripcion.fechaBaja">
@@ -116,39 +116,56 @@ import { DTOCobro } from '../models/cobroDTO.model';
             </mat-option>
           </mat-select>
         </mat-form-field>
-        <button mat-raised-button color="primary" (click)="onAgregarActividad()" *ngIf="availableActividades.length > 0">
+        <button mat-raised-button class="btn-agregar-actividad" (click)="onAgregarActividad()" *ngIf="availableActividades.length > 0">
           Agregar Actividad
         </button>
         <p *ngIf="availableActividades.length === 0">Ya está inscrito en todas las actividades disponibles.</p>
       </section>
 
 
-      <!-- Pagos -->
+      <!-- Selector de Año -->
+      <mat-form-field appearance="fill" class="compact-field">
+        <mat-label>Seleccionar Año</mat-label>
+        <mat-select formControlName="selectedYear" (selectionChange)="onYearChange($event)">
+          <mat-option *ngFor="let year of years" [value]="year">
+            {{ year }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Mostrar pagos filtrados por el año seleccionado -->
+      <h3>PAGOS</h3>
       <section class="payments-section">
-        <h3>Pagos</h3>
-        <div class="months">
-          <div *ngFor="let month of data.months" class="month" 
-              [ngClass]="{ 'completed': month.completed, 'pending': !month.completed && month.fechaPago, 'no-payment': !month.fechaPago && !month.completed }">
-            <div class="month-info">
-              <mat-icon class="month-icon">
-                {{ month.completed ? 'check_circle' : (!month.fechaPago ? 'remove_circle_outline' : 'cancel') }}
-              </mat-icon>
-              <div>{{ month.nombre }}</div>
-            </div>
-            <div *ngIf="month.fechaPago" class="payment-date">
-              Fecha de pago: {{ month.fechaPago | date: 'dd/MM/yyyy' }}
-            </div>
+          
+          <div class="months">
+              <div *ngFor="let month of filteredMonths" 
+                  class="month" 
+                  [ngClass]="{ 
+                      'paid': month.estado === 'PAGADO' && month.fechaPago, 
+                      'pending': month.estado === 'PENDIENTE', 
+                      'no-data': month.estado === 'NODATA' 
+                  }">
+                  <mat-icon class="month-icon">
+                      {{ 
+                          month.estado === 'PAGADO' ? 'check_circle' : 
+                          (month.estado === 'PENDIENTE' ? 'hourglass_empty' : 'remove_circle_outline') 
+                      }}
+                  </mat-icon>
+                  <div>{{ month.nombre }}</div>
+                  <div class="payment-date" *ngIf="month.estado === 'PAGADO' && month.fechaPago">
+                      {{ month.fechaPago | date: 'dd/MM/yyyy' }}
+                  </div>
+              </div>
           </div>
-        </div>
       </section>
 
       <!-- Botones -->
       <div class="button-group">
-        <button mat-raised-button color="primary" type="submit">Guardar</button>
-        <button mat-button type="button" (click)="onClose()">Cerrar</button>
-        <button mat-raised-button color="accent" type="button" (click)="toggleEdit()">
+        <button mat-raised-button class="btn-editar" type="button" (click)="toggleEdit()">
           {{ isEditing ? 'Cancelar' : 'Editar' }}
         </button>
+        <button mat-raised-button class="btn-guardar" type="submit">Guardar</button>
+        <button mat-button class="btn-cerrar" type="button" (click)="onClose()">Cerrar</button>
       </div>
     </div>
   </div>
@@ -156,49 +173,196 @@ import { DTOCobro } from '../models/cobroDTO.model';
 
   `,
   styles: [`
-    .title {
-      text-align: center;
-      color:rgb(14, 15, 14);
-      margin-bottom: 10px;
-    }
-
     .form-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+  gap: 10px;
   padding: 10px;
 }
 
-    .form-body {
-      display: flex;
-      justify-content: 20px;
-      width: 100%;
-      gap: 70px;
-    }
+.form-body {
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 20px;
+  width: 100%;
+}
 
-    .form-column {
-      flex: 1;
-      min-width: 250px;
-      max-width: 48%;
-    }
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-    .compact-field {
-      width: 100%;
-      margin-bottom: 10px;
-    }
+.compact-field {
+  width: 100%;
+  margin-bottom: -20px;
+}
 
-    .button-group {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-      width: 100%;
-    }
+.button-group {
+  display: margin-left;
+  margin-top: 20px;
+  width: 100%;
+  gap: 5px;
+  display: flex;
+  justify-content: flex-end; 
+}
 
-    .payments-section {
-      margin-top: 30px;
-    }
+.payments-section {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-    .activities-section ul {
+.months {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* Para pantallas grandes */
+  gap: 20px; /* Espacio entre los elementos */
+  width: 100%;
+  margin-top: 10px;
+}
+
+.month {
+  background-color: #f5f5f5;
+  padding: 15px; 
+  min-height: 80px; 
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.month-icon {
+  font-size: 32px; /* Tamaño del ícono */
+  margin-bottom: -15px; /* Espacio entre ícono y texto */
+}
+
+.payment-date {
+  font-size: 5px;
+  margin-top: 1px;
+  color: #555;
+}
+
+/* Estados */
+.completed {
+  color: green;
+}
+
+.paid {
+  color: green; /* Texto blanco para resaltar */
+}
+
+.pending {
+  color: orange; /* Texto blanco */
+}
+
+.no-data {
+  color: gray; /* Texto blanco */
+}
+
+
+/* Ajustes para pantallas medianas */
+@media (max-width: 1024px) {
+  .months {
+    grid-template-columns: repeat(3, 1fr); /* 3 columnas */
+  }
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+  .months {
+    grid-template-columns: repeat(2, 1fr); /* 2 columnas */
+  }
+}
+
+/* Ajustes para pantallas muy pequeñas (móviles) */
+@media (max-width: 360px) {
+  .months {
+    grid-template-columns: repeat(2, 1fr); /* Mantener 2 columnas */
+    gap: 10px;
+  }
+
+  .month {
+    padding: 7px; /* Reducir padding en móviles */
+    min-height: 50px;
+  }
+
+  .month-icon {
+    font-size: 24px; /* Tamaño del ícono más pequeño */
+  }
+}
+
+
+/* Estilo para cada mes */
+.month {
+  background-color: #f5f5f5;
+  padding: 5px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+/* Estilo para los iconos dentro de cada mes */
+.month .month-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+/* Ajustar tamaño de iconos */
+.month-icon {
+  font-size: 12px;
+  margin-right: 6px;
+}
+
+/* Estilo para el nombre del mes */
+.month div {
+  font-weight: bold;
+  font-size: 0.9em;
+  margin-top: 8px;
+}
+
+/* Detalles de pago */
+.payment-date {
+  font-size: 0.9em;
+  margin-top: 8px;
+  color: #555;
+}
+
+/* Estado completado */
+.completed {
+  color: green;
+}
+
+/* Estado pendiente */
+.pending {
+  color: red;
+}
+
+/* Meses sin pago */
+.no-payment {
+  color: gray;
+}
+
+.payment-date {
+  margin-top: 5px;
+}
+
+button.mat-raised-button {
+  margin-top: 10px;
+}
+
+.activities-section ul {
   list-style: none;
   padding: 0;
 }
@@ -207,89 +371,20 @@ import { DTOCobro } from '../models/cobroDTO.model';
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
 }
 
 .activities-section mat-icon {
   cursor: pointer;
-  color: red; 
+  color: red;
 }
 
 .activities-section button[mat-icon-button] {
   margin-left: 10px;
 }
 
-
-    .months {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.month {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: calc(50% - 15px);
-  text-align: left;
-}
-
-.month-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.month-icon {
-  font-size: 16px;
-}
-
-.completed {
-  color: green;
-}
-
-.pending {
-  color: red;
-}
-
-/* Nueva clase para meses sin pagos */
-.no-payment {
-  color: gray;
-}
-
-.payment-date {
-  font-size: 12px;
-  color: #888;
-}
-
-
-    button.mat-raised-button {
-      margin-top: 10px;
-    }
-
-    .activities-section ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .activities-section li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .activities-section mat-icon {
-      cursor: pointer;
-    }
-
-    .compact-field {
-  width: 100%;
-  margin-bottom: 1px; 
-}
-
 mat-form-field {
-  margin-bottom: 5px; 
-  padding: 0; 
+  margin-bottom: 5px;
+  padding: 0;
 }
 
 .baja-section {
@@ -302,6 +397,33 @@ mat-form-field {
   margin-right: 8px;
 }
 
+.btn-reactivar {
+  background-color: #ffcccc; /* Rojo clarito */
+  color: white;
+}
+
+.btn-agregar-actividad {
+  background-color: #ffcccc; /* Rojo clarito */
+  color: white;
+}
+
+.btn-editar {
+  background-color: #555555; /* Gris oscuro */
+  color: white;
+}
+
+.btn-guardar {
+  background-color: #800000; /* Granate */
+  color: white;
+}
+
+.btn-cerrar {
+  background-color: transparent;
+  color: black;
+  margin-right: 5px; /* Espacio de 5px entre los botones */
+}
+
+
   `]
 })
 export class MiembroDetailComponent implements OnInit {
@@ -310,6 +432,9 @@ export class MiembroDetailComponent implements OnInit {
   isConfirmingBaja = false;
   availableActividades: Actividad[] = [];
   todosPagados: boolean = false;
+  years: number[] = [];
+  filteredMonths: any[] = [];
+  cobros: CobroDTO[] = [];
   constructor(
     private fb: FormBuilder,
     private miembroService: MiembroService,
@@ -326,7 +451,8 @@ export class MiembroDetailComponent implements OnInit {
       observaciones: [{ value: data?.observaciones || '', disabled: true }],
       fechaAlta: [{ value: data?.fechaAlta || '', disabled: true }, Validators.required],
       fechaBaja: [{ value: data?.fechaBaja || null, disabled: true }],
-      selectedActividadId: [null]
+      selectedActividadId: [null],
+      selectedYear: [new Date().getFullYear()]
     });
   }
 
@@ -334,6 +460,26 @@ export class MiembroDetailComponent implements OnInit {
     this.data.months = this.getMonths();
     this.loadMemberDetails();
     this.loadAvailableActividades();
+    this.initializeYears();
+
+    // Cargar los pagos para el año seleccionado inicialmente
+    const selectedYear = this.miembroForm.get('selectedYear')?.value || new Date().getFullYear();
+    this.loadCobros();
+  }
+
+  // Inicializar la lista de años disponibles
+  initializeYears() {
+    const currentYear = new Date().getFullYear();
+    this.years = [];
+    for (let i = currentYear - 10; i <= currentYear; i++) { // Los últimos 10 años
+      this.years.push(i);
+    }
+  }
+
+  // Filtrar los pagos según el año seleccionado
+  onYearChange(event: any) {
+    const selectedYear = event.value;
+    this.filterPaymentsByYear(selectedYear);
   }
 
   loadMemberDetails(): void {
@@ -359,7 +505,6 @@ export class MiembroDetailComponent implements OnInit {
       });
 
       console.log("Inscripciones después de vincular actividades:", this.data.inscripciones);
-      this.calculatePaymentsStatus();
       this.loadAvailableActividades();
     }, error => {
       console.error("Error al cargar los detalles del miembro:", error);
@@ -393,54 +538,120 @@ export class MiembroDetailComponent implements OnInit {
     }
   }
 
-
-  calculatePaymentsStatus(): void {
-    const meses: Mes[] = this.data.months;
-
+  // Método que obtiene los cobros del servidor
+  loadCobros(): void {
+    // Llamar al servicio para obtener los cobros del miembro actual
     this.cobrosService.getCobrosPorMiembro(this.data.id).subscribe((cobros: CobroDTO[]) => {
-      console.log('Cobros obtenidos:', cobros); // Debug
+      console.log('Cobros obtenidos:', cobros); // Depuración: Verificar los cobros obtenidos
 
-      meses.forEach(mes => {
-        const pagosDelMes = cobros.filter(cobro => {
-          const fechaCobro = new Date(cobro.fecha);
-          return (
-            fechaCobro.getMonth() === this.getMonthNumber(mes.nombre) &&
-            fechaCobro.getFullYear() === new Date().getFullYear()
-          );
-        });
+      // Guardar los cobros en una propiedad del componente
+      this.cobros = cobros;
 
-        if (pagosDelMes.length === 0) {
-          mes.completed = false; // Cruz roja
-        } else {
-          mes.completed = pagosDelMes.every(cobro => cobro.estado === 'PAGADO');
-        }
-
-        if (mes.completed) {
-          mes.fechaPago = pagosDelMes[0]?.fechaPago ? new Date(pagosDelMes[0].fechaPago) : undefined;
-        }
-      });
-
-      console.log('Meses con estado actualizado:', meses);
-      this.data.months = meses;
-    }, error => {
-      console.error('Error al obtener cobros:', error);
+      // Llamar al método que se encarga de filtrar y actualizar los estados de los meses por el año actual
+      this.filterPaymentsByYear(new Date().getFullYear());
     });
   }
 
-  getMonths(): Mes[] {
+
+  // Método que filtra los cobros por año y actualiza el estado de los meses
+  filterPaymentsByYear(year: number): void {
+    // Obtener la referencia a los meses desde los datos del componente
+    const meses: Mes[] = this.data.months;
+
+    // Resetear el estado de todos los meses
+    console.log('Resetando el estado de los meses...');
+    meses.forEach(mes => {
+      mes.estado = 'NODATA'; // Inicialmente, todos los meses están sin datos
+      mes.fechaPago = undefined; // Limpiar cualquier fecha de pago previa
+      console.log(`Mes ${mes.nombre} - Estado: ${mes.estado}, Fecha de Pago: ${mes.fechaPago}`);
+    });
+
+    // Iterar por cada mes y calcular su estado
+    meses.forEach(mes => {
+      console.log(`Procesando mes: ${mes.nombre}...`);
+
+      // Filtrar los cobros que corresponden al mes y año actual o están pendientes
+      const pagosDelMes = this.cobros.filter((cobro: CobroDTO) => {
+        const fechaCobro = cobro.fechaPago ? new Date(cobro.fechaPago) : null;
+        const fechaCobroOriginal = new Date(cobro.fecha); // Fecha original del cobro
+        console.log(`- Procesando cobro: ${JSON.stringify(cobro)} - Fecha de cobro: ${fechaCobro}`);
+
+        // Si el estado es "PENDIENTE" y no tiene fecha de pago, considerarlo solo si es para este mes
+        if (cobro.estado === 'PENDIENTE' && !fechaCobro) {
+          console.log(`  > Encontrado pago pendiente sin fecha para el mes ${mes.nombre}`);
+          return fechaCobroOriginal.getFullYear() === year &&
+            fechaCobroOriginal.getMonth() === this.getMonthNumber(mes.nombre); // Verificar año y mes con la fecha original
+        }
+
+        // Comprobar fechas solo si el estado no es "PENDIENTE"
+        return (
+          fechaCobro &&
+          fechaCobro.getMonth() === this.getMonthNumber(mes.nombre) &&
+          fechaCobro.getFullYear() === year
+        );
+      });
+
+      console.log(`- Pagos encontrados para el mes ${mes.nombre}:`, pagosDelMes);
+
+      // Determinar el estado del mes basado en los cobros encontrados
+      if (pagosDelMes.length === 0) {
+        console.log(`  > No se encontraron pagos para el mes ${mes.nombre}. Estado: NODATA`);
+        mes.estado = 'NODATA';
+        mes.fechaPago = undefined;
+      } else {
+        const todosPagados = pagosDelMes.every((cobro: { estado: string; }) => cobro.estado === 'PAGADO');
+        const algunPendiente = pagosDelMes.some((cobro: { estado: string; }) => cobro.estado === 'PENDIENTE');
+
+        console.log(`  > Todos pagados: ${todosPagados}, Algún pendiente: ${algunPendiente}`);
+
+        if (todosPagados) {
+          console.log(`  > Todos los pagos están pagados para el mes ${mes.nombre}`);
+          mes.estado = 'PAGADO';
+          mes.fechaPago = pagosDelMes[0].fechaPago ? new Date(pagosDelMes[0].fechaPago) : undefined;
+        } else if (algunPendiente) {
+          console.log(`  > Hay pagos pendientes para el mes ${mes.nombre}`);
+          mes.estado = 'PENDIENTE';
+          // Si el pago está pendiente y no tiene fecha, asignar una fecha provisional
+          if (!mes.fechaPago) {
+            console.log(`  > Asignando fecha provisional para el mes ${mes.nombre}`);
+            mes.fechaPago = new Date(year, this.getMonthNumber(mes.nombre), 1); // Asignar el primer día del mes
+          }
+        }
+      }
+
+      // Depuración para verificar los resultados
+      console.log(
+        `Mes: ${mes.nombre}, Estado: ${mes.estado}, Fecha de pago: ${mes.fechaPago || 'undefined'}`
+      );
+    });
+
+    // Actualizar la lista de meses filtrados
+    this.filteredMonths = meses.map(mes => ({
+      nombre: mes.nombre,
+      estado: mes.estado,
+      fechaPago: mes.fechaPago
+    }));
+
+    console.log('Meses con estado actualizado:', this.filteredMonths);
+  }
+
+
+
+
+  getMonths(): any[] {
     return [
-      { nombre: 'Enero', completed: false },
-      { nombre: 'Febrero', completed: false },
-      { nombre: 'Marzo', completed: false },
-      { nombre: 'Abril', completed: false },
-      { nombre: 'Mayo', completed: false },
-      { nombre: 'Junio', completed: false },
-      { nombre: 'Julio', completed: false },
-      { nombre: 'Agosto', completed: false },
-      { nombre: 'Septiembre', completed: false },
-      { nombre: 'Octubre', completed: false },
-      { nombre: 'Noviembre', completed: false },
-      { nombre: 'Diciembre', completed: false }
+      { nombre: 'Enero', estado: 'NODATA' },
+      { nombre: 'Febrero', estado: 'NODATA' },
+      { nombre: 'Marzo', estado: 'NODATA' },
+      { nombre: 'Abril', estado: 'NODATA' },
+      { nombre: 'Mayo', estado: 'NODATA' },
+      { nombre: 'Junio', estado: 'NODATA' },
+      { nombre: 'Julio', estado: 'NODATA' },
+      { nombre: 'Agosto', estado: 'NODATA' },
+      { nombre: 'Septiembre', estado: 'NODATA' },
+      { nombre: 'Octubre', estado: 'NODATA' },
+      { nombre: 'Noviembre', estado: 'NODATA' },
+      { nombre: 'Diciembre', estado: 'NODATA' }
     ];
   }
 

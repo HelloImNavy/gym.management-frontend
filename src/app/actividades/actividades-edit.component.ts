@@ -10,8 +10,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 
-
-
 @Component({
   selector: 'app-actividades-edit',
   standalone: true,
@@ -51,43 +49,78 @@ import { CommonModule } from '@angular/common';
       </mat-dialog-actions>
     </form>
   `,
-  styles: [`
-    .full-width {
-      width: 100%;
-    }
+  styles: [
+    `
+      .full-width {
+        width: 100%;
+      }
 
-    mat-dialog-title {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
+      mat-dialog-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
 
-    mat-form-field {
-      margin-bottom: 16px;
-      width: 100%;
-    }
+      mat-form-field {
+        margin-bottom: 16px;
+        width: 100%;
+      }
 
-    mat-dialog-actions {
-      padding: 16px;
-    }
+      mat-dialog-actions {
+        padding: 16px;
+      }
 
-    button[mat-button] {
-      margin-right: 10px;
-    }
+      button[mat-button] {
+        margin-right: 10px;
+      }
 
-    mat-error {
-      font-size: 12px;
-      color: red;
-    }
+      mat-error {
+        font-size: 12px;
+        color: red;
+      }
 
-    mat-raised-button {
-      margin-top: 20px;
-    }
+      mat-raised-button {
+        margin-top: 20px;
+      }
 
-    mat-dialog-content {
-      padding: 20px;
-    }
-  `]
+      mat-dialog-content {
+        padding: 20px;
+      }
+
+      
+      @media (max-width: 768px) {
+        mat-dialog-container {
+          width: 80vw;
+          padding: 10px;
+        }
+
+        .full-width {
+          width: 100%;
+        }
+
+        mat-dialog-actions button {
+          width: 100%;
+          margin-top: 10px;
+        }
+      }
+
+      @media (max-width: 380px) {
+        mat-dialog-container {
+          width: 95vw;
+          padding: 5px;
+        }
+
+        .mat-form-field input,
+        .mat-form-field select {
+          font-size: 14px;
+        }
+
+        button {
+          font-size: 14px;
+        }
+      }
+    `
+  ]
 })
 export class ActividadesEditComponent {
   actividadForm: FormGroup;
@@ -110,12 +143,12 @@ export class ActividadesEditComponent {
     if (this.actividadForm.valid) {
       const updatedActividad = { ...this.data, ...this.actividadForm.value };
       this.actividadService.updateActividad(updatedActividad).subscribe(() => {
-        this.dialogRef.close(true);  
+        this.dialogRef.close(true);
       });
     }
   }
 
   onCancel(): void {
-    this.dialogRef.close(false);  
+    this.dialogRef.close(false);
   }
 }

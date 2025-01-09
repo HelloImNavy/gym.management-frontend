@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { map, Observable } from 'rxjs';
 import { CobroDTO } from '../models/cobro.model';
 import { DTOCobro } from '../models/cobroDTO.model';
 
@@ -45,13 +45,26 @@ export class CobrosService {
     return this.http.put<CobroDTO>(`${this.apiUrl}/${cobroId}`, cobro);
   }
 
-  deleteCobro(cobroId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${cobroId}`);
+  deleteCobro(cobroId: number): Observable<string> {
+    return this.http.delete<string>(`${this.apiUrl}/${cobroId}`, { responseType: 'text' as 'json' });
   }
 
   getCobrosPorMiembro(miembroId: number): Observable<CobroDTO[]> {
     return this.http.get<CobroDTO[]>(`${this.apiUrl}/miembro/${miembroId}`);
   }
 
+  getCobrosPagadosAnio(anio: number): Observable<{ fecha: string, monto: number }[]> {
+    const params = new HttpParams()
+      .set('anio', anio.toString());
+
+    return this.http.get<any>(this.apiUrl + '/pagado' + '/anio', { params }).pipe(
+      map(cobros =>
+        cobros.map((cobro: { fechaPago: any; monto: any }) => ({
+          fecha: cobro.fechaPago,
+          monto: cobro.monto
+        }))
+      )
+    );
+  }
 
 }
