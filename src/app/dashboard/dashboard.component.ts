@@ -8,6 +8,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { AuthService } from '../auth/auth.service';
+import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -155,11 +157,11 @@ mat-panel-title mat-icon {
 })
 export class DashboardComponent {
   isExpanded = false;
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService, private router: Router) { }
 
   logout(): void {
     this.authService.logout();
-    
+    this.router.navigate(['/login']);
   }
 
   expandPanel(): void { this.isExpanded = !this.isExpanded; }

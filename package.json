@@ -19,6 +19,7 @@
     "bootstrap": "^5.3.3",
     "gym-management": "file:",
     "rxjs": "^7.8.1",
+    "sweetalert2": "^11.15.10",
     "tslib": "^2.5.0",
     "zone.js": "~0.14.0"
   },

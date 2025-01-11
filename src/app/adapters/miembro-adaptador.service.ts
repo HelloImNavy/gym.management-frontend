@@ -1,4 +1,3 @@
-// miembro-adaptador.service.ts
 import { Injectable } from '@angular/core';
 import { Miembro } from '../models/miembro.model'; 
 

@@ -7,7 +7,7 @@ import { RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { ActividadService } from '../services/actividad.service';
 import { Actividad } from '../models/actividad.model';
-import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 import { ActividadesEditComponent } from '../actividades/actividades-edit.component';
 import { InscripcionesListComponent } from '../inscripciones/inscripciones-list.component';
 import { ActividadFormComponent } from '../actividades/actividad-form.component';
@@ -127,11 +127,11 @@ export class ActividadesListComponent implements OnInit {
 
   nuevaActividad() {
     const dialogRef = this.dialog.open(ActividadFormComponent, {
-      width: '90vw',       
-      height: 'auto',      
+      width: '90vw',
+      height: 'auto',
       maxWidth: '450px'
     });
-  
+
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.cargarActividades();
@@ -140,13 +140,13 @@ export class ActividadesListComponent implements OnInit {
       }
     });
   }
-  
-  
+
+
 
   editarActividad(actividad: Actividad) {
     const dialogRef = this.dialog.open(ActividadesEditComponent, {
-      width: '90vw',       
-      height: 'auto',      
+      width: '90vw',
+      height: 'auto',
       maxWidth: '450px',
       data: actividad
     });
@@ -160,15 +160,41 @@ export class ActividadesListComponent implements OnInit {
 
   eliminarActividad(id?: number): void {
     if (id) {
-      this.actividadService.deleteActividad(id).subscribe(() => {
-        this.cargarActividades();
+      this.actividadService.deleteActividad(id).subscribe({
+        next: () => {
+          this.cargarActividades();
+        },
+        error: (err) => {
+          if (err.status === 400 && err.error?.message) {
+            Swal.fire({
+              position: 'bottom',
+              icon: 'error',
+              title: 'Error al eliminar',
+              text: err.error.message,
+              showConfirmButton: false,
+              timer: 3000,
+              toast: true
+            });
+          } else {
+            Swal.fire({
+              position: 'top-end',
+              icon: 'warning',
+              title: 'Error al eliminar, hay cobros asociados',
+              text: err.error.message,
+              showConfirmButton: false,
+              timer: 3000,
+              toast: true
+            });
+          }
+        }
       });
     }
   }
 
   verInscripciones(id: number) {
     const dialogRef = this.dialog.open(InscripcionesListComponent, {
-      width: '800px',
+      width: '500px',
+      height: '500px',
       data: { actividadId: id }
     });
   }

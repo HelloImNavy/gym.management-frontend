@@ -43,21 +43,18 @@ import { EditCobroFormComponent } from './cobro-edit.component';
     <h2>LISTADO DE COBROS</h2>
 
     <div class="filter-container">
-      <!-- Filtro por fecha de inicio -->
       <mat-form-field>
         <input matInput [matDatepicker]="startDatepicker" placeholder="Fecha Inicio" [(ngModel)]="startDate" (dateChange)="applyFilter()"/>
         <mat-datepicker-toggle matSuffix [for]="startDatepicker"></mat-datepicker-toggle>
         <mat-datepicker #startDatepicker></mat-datepicker>
       </mat-form-field>
 
-      <!-- Filtro por fecha de fin -->
       <mat-form-field>
         <input matInput [matDatepicker]="endDatepicker" placeholder="Fecha Fin" [(ngModel)]="endDate" (dateChange)="applyFilter()"/>
         <mat-datepicker-toggle matSuffix [for]="endDatepicker"></mat-datepicker-toggle>
         <mat-datepicker #endDatepicker></mat-datepicker>
       </mat-form-field>
 
-      <!-- Selector de estado -->
       <mat-form-field>
         <mat-select placeholder="Estado" [(ngModel)]="selectedState" (selectionChange)="applyFilter()">
           <mat-option value="TODOS">Todos</mat-option>
@@ -66,19 +63,16 @@ import { EditCobroFormComponent } from './cobro-edit.component';
         </mat-select>
       </mat-form-field>
 
-      <!-- Filtro por nombre -->
       <mat-form-field>
         <input matInput placeholder="Buscar por nombre" [(ngModel)]="searchTerm" (input)="applyFilter()">
       </mat-form-field>
 
-      <!-- Botón para resetear los filtros -->
       <button mat-raised-button style="background-color: #333; color: white;" (click)="resetFilters()">Resetear Filtros</button>
     </div>
 
     <div class="container">
       <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
 
-        <!-- Columna Fecha Creación -->
         <ng-container matColumnDef="fechaCreacion">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Creación </th>
           <td mat-cell *matCellDef="let cobro" [ngClass]="{'pendiente': cobro.estado === 'PENDIENTE', 'pagado': cobro.estado === 'PAGADO'}">
@@ -86,7 +80,6 @@ import { EditCobroFormComponent } from './cobro-edit.component';
           </td>
         </ng-container>
 
-        <!-- Columna Fecha Pago -->
         <ng-container matColumnDef="fechaPago">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Pago </th>
           <td mat-cell *matCellDef="let cobro">
@@ -94,25 +87,21 @@ import { EditCobroFormComponent } from './cobro-edit.component';
           </td>
         </ng-container>
 
-        <!-- Columna Nombre Socio -->
         <ng-container matColumnDef="miembro">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Nombre Socio </th>
           <td mat-cell *matCellDef="let cobro">{{ cobro.miembroNombre }} {{ cobro.miembroApellidos }} </td>
         </ng-container>
 
-        <!-- Columna Concepto -->
         <ng-container matColumnDef="concepto">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Concepto </th>
           <td mat-cell *matCellDef="let cobro">{{ cobro.concepto }} </td>
         </ng-container>
 
-        <!-- Columna Importe -->
         <ng-container matColumnDef="monto">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Importe (€) </th>
           <td mat-cell *matCellDef="let cobro">{{ cobro.monto | currency: 'EUR':'symbol':'1.2-2' }} </td>
         </ng-container>
 
-        <!-- Columna Estado -->
         <ng-container matColumnDef="estado">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Estado </th>
           <td mat-cell *matCellDef="let cobro">
@@ -124,7 +113,6 @@ import { EditCobroFormComponent } from './cobro-edit.component';
           </td>
         </ng-container>
 
-        <!-- Columna Acciones -->
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef> Acciones </th>
           <td mat-cell *matCellDef="let cobro">
@@ -234,11 +222,10 @@ export class CobrosListComponent implements OnInit {
       .pipe(
         tap((data: CobroDTO[]) => {
           console.log('Datos de cobros obtenidos:', data);
-          // Adaptar las propiedades renombradas y añadir fechaPago
           this.cobros = data.map(cobro => ({
             ...cobro,
-            fechaCreacion: cobro.fecha, // Renombrar a fechaCreacion
-            fechaPago: cobro.fechaPago // Nueva columna
+            fechaCreacion: cobro.fecha, 
+            fechaPago: cobro.fechaPago 
           }));
           this.dataSource.data = this.cobros;
           this.dataSource.sort = this.sort;
@@ -255,7 +242,6 @@ export class CobrosListComponent implements OnInit {
   applyFilter() {
     let filteredData = this.cobros;
 
-    // Filtrar por rango de fechas
     if (this.startDate) {
       filteredData = filteredData.filter(cobro => new Date(cobro.fecha) >= this.startDate!);
     }
@@ -263,12 +249,10 @@ export class CobrosListComponent implements OnInit {
       filteredData = filteredData.filter(cobro => new Date(cobro.fecha) <= this.endDate!);
     }
 
-    // Filtrar por estado
     if (this.selectedState !== 'TODOS') {
       filteredData = filteredData.filter(cobro => cobro.estado === this.selectedState);
     }
 
-    // Filtrar por término de búsqueda
     if (this.searchTerm) {
       filteredData = filteredData.filter(cobro => {
         return cobro.miembroNombre.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
@@ -276,23 +260,22 @@ export class CobrosListComponent implements OnInit {
       });
     }
 
-    this.dataSource.data = filteredData; // Actualizar la tabla con los datos filtrados
+    this.dataSource.data = filteredData; 
   }
 
   resetFilters() {
-    // Resetear los filtros
     this.startDate = null;
     this.endDate = null;
     this.selectedState = 'TODOS';
     this.searchTerm = '';
-    this.applyFilter(); // Aplicar los filtros resetados
+    this.applyFilter(); 
   }
 
   editCobro(cobro: CobroDTO) {
     const dialogRef = this.dialog.open(EditCobroFormComponent, {
-      width: '90vw',       // 90% del ancho de la ventana
-      height: 'auto',      // Ajusta la altura de acuerdo al contenido
-      maxWidth: '600px',   // El ancho máximo será de 600px, pero se adapta en pantallas más pequeñas
+      width: '90vw',       
+      height: 'auto',      
+      maxWidth: '600px',   
       data: { cobro }
     });
 

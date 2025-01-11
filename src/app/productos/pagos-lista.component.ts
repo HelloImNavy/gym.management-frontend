@@ -160,18 +160,18 @@ import { MatSelectModule } from '@angular/material/select';
     }
 
     .pagado {
-      background-color:rgb(113, 218, 116); 
+      background-color:rgb(185, 227, 186); 
       color: black;
     }
 
     .pendiente {
-      background-color:rgb(232, 146, 146); 
+      background-color:rgb(227, 178, 178); 
 
     }
 
 
     .mat-elevation-z8 {
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Mantén la sombra ligera */
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
     }
 
     .header {

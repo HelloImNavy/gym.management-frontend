@@ -83,7 +83,7 @@ import { forkJoin } from 'rxjs';
       <button mat-raised-button color="primary" type="submit" [disabled]="!miembroForm.valid">
         Guardar
       </button>
-      <button mat-button color="warn" (click)="onCancel()">Cancelar</button>
+      <button mat-button (click)="onCancel()">Cancelar</button>
     </div>
   </form>
 </div>
@@ -164,12 +164,10 @@ export class MiembrosFormComponent implements OnInit {
     if (this.miembroForm.valid) {
       const miembroData = this.miembroForm.value;
 
-      // Crear una lista de observables para obtener las actividades
       const actividadObservables = miembroData.actividades.map((actividadId: string) =>
         this.actividadService.getActividad(actividadId)
       );
 
-      // Ejecutar todas las llamadas al servicio y esperar sus resultados
       forkJoin(actividadObservables).subscribe((actividades: any) => {
         const socioPayload: Miembro = {
           nombre: miembroData.nombre,
@@ -189,7 +187,7 @@ export class MiembrosFormComponent implements OnInit {
           })),
         };
 
-        // Crear el miembro
+        
         this.miembroService.crearMiembro(socioPayload).subscribe({
           next: (response) => {
             this.snackBar.open('Socio creado con éxito', 'Cerrar', { duration: 3000 });

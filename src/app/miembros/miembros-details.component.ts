@@ -33,7 +33,6 @@ import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } 
   template: `
 <form [formGroup]="miembroForm" (ngSubmit)="onSave()" class="form-container">
   <div class="form-body">
-    <!-- Columna de datos -->
     <div class="form-column">
       <mat-form-field appearance="fill" class="compact-field">
         <mat-label>Nombre</mat-label>
@@ -70,7 +69,6 @@ import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } 
         <input matInput formControlName="fechaAlta" type="date" />
       </mat-form-field>
 
-      <!-- Columna de baja -->
       <div class="baja-section">
         <mat-form-field appearance="fill" class="compact-field baja-field">
           <mat-label>Fecha de Baja</mat-label>
@@ -88,9 +86,7 @@ import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } 
       </div>
     </div>
 
-    <!-- Columna de actividades y cobros -->
     <div class="form-column">
-      <!-- Actividades -->
       <section class="activities-section">
         <h3>ACTIVIDADES</h3>
         <ul>
@@ -122,8 +118,6 @@ import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } 
         <p *ngIf="availableActividades.length === 0">Ya está inscrito en todas las actividades disponibles.</p>
       </section>
 
-
-      <!-- Selector de Año -->
       <mat-form-field appearance="fill" class="compact-field">
         <mat-label>Seleccionar Año</mat-label>
         <mat-select formControlName="selectedYear" (selectionChange)="onYearChange($event)">
@@ -133,7 +127,6 @@ import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } 
         </mat-select>
       </mat-form-field>
 
-      <!-- Mostrar pagos filtrados por el año seleccionado -->
       <h3>PAGOS</h3>
       <section class="payments-section">
           
@@ -173,7 +166,7 @@ import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } 
 
   `,
   styles: [`
-    .form-container {
+   .form-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
   gap: 10px;
@@ -216,8 +209,8 @@ import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } 
 
 .months {
   display: grid;
-  grid-template-columns: repeat(6, 1fr); /* Para pantallas grandes */
-  gap: 20px; /* Espacio entre los elementos */
+  grid-template-columns: repeat(6, 1fr); 
+  gap: 20px; 
   width: 100%;
   margin-top: 10px;
 }
@@ -237,8 +230,8 @@ import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } 
 }
 
 .month-icon {
-  font-size: 32px; /* Tamaño del ícono */
-  margin-bottom: -15px; /* Espacio entre ícono y texto */
+  font-size: 32px; 
+  margin-bottom: -15px; 
 }
 
 .payment-date {
@@ -247,57 +240,51 @@ import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } 
   color: #555;
 }
 
-/* Estados */
 .completed {
   color: green;
 }
 
 .paid {
-  color: green; /* Texto blanco para resaltar */
+  color: green; 
 }
 
 .pending {
-  color: orange; /* Texto blanco */
+  color: orange;
 }
 
 .no-data {
-  color: gray; /* Texto blanco */
+  color: gray; 
 }
 
 
-/* Ajustes para pantallas medianas */
 @media (max-width: 1024px) {
   .months {
-    grid-template-columns: repeat(3, 1fr); /* 3 columnas */
+    grid-template-columns: repeat(3, 1fr); 
   }
 }
 
-/* Ajustes para pantallas pequeñas */
 @media (max-width: 768px) {
   .months {
-    grid-template-columns: repeat(2, 1fr); /* 2 columnas */
+    grid-template-columns: repeat(2, 1fr); 
   }
 }
 
-/* Ajustes para pantallas muy pequeñas (móviles) */
 @media (max-width: 360px) {
   .months {
-    grid-template-columns: repeat(2, 1fr); /* Mantener 2 columnas */
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
 
   .month {
-    padding: 7px; /* Reducir padding en móviles */
+    padding: 7px; 
     min-height: 50px;
   }
 
   .month-icon {
-    font-size: 24px; /* Tamaño del ícono más pequeño */
+    font-size: 24px; 
   }
 }
 
-
-/* Estilo para cada mes */
 .month {
   background-color: #f5f5f5;
   padding: 5px;
@@ -311,7 +298,6 @@ import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } 
   transition: background-color 0.3s ease;
 }
 
-/* Estilo para los iconos dentro de cada mes */
 .month .month-info {
   display: flex;
   align-items: center;
@@ -319,37 +305,31 @@ import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } 
   margin-bottom: 2px;
 }
 
-/* Ajustar tamaño de iconos */
 .month-icon {
   font-size: 12px;
   margin-right: 6px;
 }
 
-/* Estilo para el nombre del mes */
 .month div {
   font-weight: bold;
   font-size: 0.9em;
   margin-top: 8px;
 }
 
-/* Detalles de pago */
 .payment-date {
   font-size: 0.9em;
   margin-top: 8px;
   color: #555;
 }
 
-/* Estado completado */
 .completed {
   color: green;
 }
 
-/* Estado pendiente */
 .pending {
   color: red;
 }
 
-/* Meses sin pago */
 .no-payment {
   color: gray;
 }
@@ -398,31 +378,30 @@ mat-form-field {
 }
 
 .btn-reactivar {
-  background-color: #ffcccc; /* Rojo clarito */
+  background-color: #800000; 
   color: white;
 }
 
 .btn-agregar-actividad {
-  background-color: #ffcccc; /* Rojo clarito */
+  background-color: #555555; 
   color: white;
 }
 
 .btn-editar {
-  background-color: #555555; /* Gris oscuro */
+  background-color: #555555; 
   color: white;
 }
 
 .btn-guardar {
-  background-color: #800000; /* Granate */
+  background-color: #800000; 
   color: white;
 }
 
 .btn-cerrar {
   background-color: transparent;
   color: black;
-  margin-right: 5px; /* Espacio de 5px entre los botones */
+  margin-right: 5px; 
 }
-
 
   `]
 })
@@ -462,21 +441,18 @@ export class MiembroDetailComponent implements OnInit {
     this.loadAvailableActividades();
     this.initializeYears();
 
-    // Cargar los pagos para el año seleccionado inicialmente
     const selectedYear = this.miembroForm.get('selectedYear')?.value || new Date().getFullYear();
     this.loadCobros();
   }
 
-  // Inicializar la lista de años disponibles
   initializeYears() {
     const currentYear = new Date().getFullYear();
     this.years = [];
-    for (let i = currentYear - 10; i <= currentYear; i++) { // Los últimos 10 años
+    for (let i = currentYear - 10; i <= currentYear; i++) { 
       this.years.push(i);
     }
   }
 
-  // Filtrar los pagos según el año seleccionado
   onYearChange(event: any) {
     const selectedYear = event.value;
     this.filterPaymentsByYear(selectedYear);
@@ -492,15 +468,14 @@ export class MiembroDetailComponent implements OnInit {
         console.log(`Inscripción ID: ${inscripcion.id}, Actividad ID: ${inscripcion.idActividad}`);
       });
 
-      // Vincular inscripciones con actividades correspondientes
       this.data.inscripciones = this.data.inscripciones.map((inscripcion: any) => {
         const actividad = this.data.actividades.find((a: Actividad) => a.id === inscripcion.idActividad);
         if (actividad) {
           console.log(`Vinculando actividad ${actividad.nombre} (ID: ${actividad.id}) con inscripción ${inscripcion.idActividad}`);
-          return { ...inscripcion, actividad }; // Crear un nuevo objeto que incluye la actividad
+          return { ...inscripcion, actividad }; 
         } else {
           console.warn(`No se encontró actividad para la inscripción ${inscripcion.id} con actividadId ${inscripcion.idActividad}`);
-          return { ...inscripcion, actividad: null }; // Manejar la inscripción sin actividad
+          return { ...inscripcion, actividad: null }; 
         }
       });
 
@@ -523,8 +498,6 @@ export class MiembroDetailComponent implements OnInit {
     });
   }
 
-
-
   checkActividadesDisponibles(): void {
     const hasActividadesDisponibles = this.availableActividades.length > 0;
     const actividadControl = this.miembroForm.get('selectedActividadId');
@@ -538,52 +511,40 @@ export class MiembroDetailComponent implements OnInit {
     }
   }
 
-  // Método que obtiene los cobros del servidor
   loadCobros(): void {
-    // Llamar al servicio para obtener los cobros del miembro actual
     this.cobrosService.getCobrosPorMiembro(this.data.id).subscribe((cobros: CobroDTO[]) => {
-      console.log('Cobros obtenidos:', cobros); // Depuración: Verificar los cobros obtenidos
+      console.log('Cobros obtenidos:', cobros); 
 
-      // Guardar los cobros en una propiedad del componente
       this.cobros = cobros;
 
-      // Llamar al método que se encarga de filtrar y actualizar los estados de los meses por el año actual
       this.filterPaymentsByYear(new Date().getFullYear());
     });
   }
 
-
-  // Método que filtra los cobros por año y actualiza el estado de los meses
   filterPaymentsByYear(year: number): void {
-    // Obtener la referencia a los meses desde los datos del componente
     const meses: Mes[] = this.data.months;
 
-    // Resetear el estado de todos los meses
     console.log('Resetando el estado de los meses...');
     meses.forEach(mes => {
-      mes.estado = 'NODATA'; // Inicialmente, todos los meses están sin datos
-      mes.fechaPago = undefined; // Limpiar cualquier fecha de pago previa
+      mes.estado = 'NODATA'; 
+      mes.fechaPago = undefined; 
       console.log(`Mes ${mes.nombre} - Estado: ${mes.estado}, Fecha de Pago: ${mes.fechaPago}`);
     });
 
-    // Iterar por cada mes y calcular su estado
     meses.forEach(mes => {
       console.log(`Procesando mes: ${mes.nombre}...`);
 
-      // Filtrar los cobros que corresponden al mes y año actual o están pendientes
       const pagosDelMes = this.cobros.filter((cobro: CobroDTO) => {
         const fechaCobro = cobro.fechaPago ? new Date(cobro.fechaPago) : null;
         const fechaCobroOriginal = new Date(cobro.fecha); // Fecha original del cobro
         console.log(`- Procesando cobro: ${JSON.stringify(cobro)} - Fecha de cobro: ${fechaCobro}`);
 
-        // Si el estado es "PENDIENTE" y no tiene fecha de pago, considerarlo solo si es para este mes
         if (cobro.estado === 'PENDIENTE' && !fechaCobro) {
           console.log(`  > Encontrado pago pendiente sin fecha para el mes ${mes.nombre}`);
           return fechaCobroOriginal.getFullYear() === year &&
-            fechaCobroOriginal.getMonth() === this.getMonthNumber(mes.nombre); // Verificar año y mes con la fecha original
+            fechaCobroOriginal.getMonth() === this.getMonthNumber(mes.nombre); 
         }
 
-        // Comprobar fechas solo si el estado no es "PENDIENTE"
         return (
           fechaCobro &&
           fechaCobro.getMonth() === this.getMonthNumber(mes.nombre) &&
@@ -593,7 +554,6 @@ export class MiembroDetailComponent implements OnInit {
 
       console.log(`- Pagos encontrados para el mes ${mes.nombre}:`, pagosDelMes);
 
-      // Determinar el estado del mes basado en los cobros encontrados
       if (pagosDelMes.length === 0) {
         console.log(`  > No se encontraron pagos para el mes ${mes.nombre}. Estado: NODATA`);
         mes.estado = 'NODATA';
@@ -611,21 +571,18 @@ export class MiembroDetailComponent implements OnInit {
         } else if (algunPendiente) {
           console.log(`  > Hay pagos pendientes para el mes ${mes.nombre}`);
           mes.estado = 'PENDIENTE';
-          // Si el pago está pendiente y no tiene fecha, asignar una fecha provisional
           if (!mes.fechaPago) {
             console.log(`  > Asignando fecha provisional para el mes ${mes.nombre}`);
-            mes.fechaPago = new Date(year, this.getMonthNumber(mes.nombre), 1); // Asignar el primer día del mes
+            mes.fechaPago = new Date(year, this.getMonthNumber(mes.nombre), 1); 
           }
         }
       }
 
-      // Depuración para verificar los resultados
       console.log(
         `Mes: ${mes.nombre}, Estado: ${mes.estado}, Fecha de pago: ${mes.fechaPago || 'undefined'}`
       );
     });
 
-    // Actualizar la lista de meses filtrados
     this.filteredMonths = meses.map(mes => ({
       nombre: mes.nombre,
       estado: mes.estado,
@@ -634,9 +591,6 @@ export class MiembroDetailComponent implements OnInit {
 
     console.log('Meses con estado actualizado:', this.filteredMonths);
   }
-
-
-
 
   getMonths(): any[] {
     return [
@@ -723,23 +677,18 @@ export class MiembroDetailComponent implements OnInit {
 
   reactivarMiembro(): void {
     if (this.data && this.miembroForm.get('fechaBaja')?.value) {
-      // Crear objeto con los datos actualizados para reactivar el miembro
       const updatedData = { ...this.data, fechaBaja: null };
 
-      // Llamar al servicio para actualizar al miembro
       this.miembroService.actualizarMiembro(this.data.id, updatedData).subscribe({
         next: () => {
-          // Limpiar la fecha de baja en el objeto data
           this.data.fechaBaja = null;
           this.miembroForm.get('fechaBaja')?.setValue(null);
 
           console.log('Miembro reactivado');
 
-          // Recargar los detalles del miembro
-          this.loadMemberDetails();  // Esto debería recargar las inscripciones y cualquier otra información
+          this.loadMemberDetails();  
 
-          // Si necesitas también habilitar algunos campos específicos después de la reactivación, puedes hacerlo aquí:
-          this.toggleEdit();  // Activar la edición si es necesario
+          this.toggleEdit(); 
         },
         error: (error) => {
           console.error('Error al reactivar al miembro:', error);
@@ -757,12 +706,10 @@ export class MiembroDetailComponent implements OnInit {
 
       this.miembroService.darDeBajaMiembro(this.data.id, formattedFechaBaja).subscribe({
         next: () => {
-          // Actualizar los detalles del miembro
           this.data.fechaBaja = formattedFechaBaja;
           this.miembroForm.get('fechaBaja')?.disable();
           this.isConfirmingBaja = false;
 
-          // Forzar la actualización de la vista para que los botones se actualicen
           this.loadMemberDetails();
           console.log('Miembro dado de baja');
         },
@@ -773,17 +720,15 @@ export class MiembroDetailComponent implements OnInit {
     }
   }
 
-
   onAgregarActividad(): void {
     const selectedActividadId = this.miembroForm.get('selectedActividadId')?.value;
     if (!selectedActividadId) {
       return;
     }
-
+  
     const actividadSeleccionada = this.availableActividades.find(a => a.id === selectedActividadId);
     if (!actividadSeleccionada) return;
-
-    // Inscribir al miembro en la actividad
+  
     this.miembroService.inscribirEnActividad(parseInt(this.data.id), parseInt(selectedActividadId)).subscribe({
       next: (response) => {
         const inscripcion = response.inscripcion;
@@ -791,15 +736,13 @@ export class MiembroDetailComponent implements OnInit {
           console.error("La inscripción no contiene un ID válido.");
           return;
         }
-
-        // Agregar la inscripción a la lista
+  
         this.data.inscripciones.push({
           id: inscripcion.id,
           actividad: actividadSeleccionada,
           fechaBaja: null
         });
-
-        // Crear el cobro con el objeto miembro completo (en lugar de solo los datos de nombre y apellidos)
+  
         const cobroPayload: DTOCobro = {
           miembro: {
             id: parseInt(this.data.id),
@@ -807,7 +750,7 @@ export class MiembroDetailComponent implements OnInit {
             apellidos: this.data.apellidos,
           },
           inscripcion: {
-            id: inscripcion.id, // Usamos el ID de la inscripción recién creada
+            id: inscripcion.id, 
             actividad: {
               id: actividadSeleccionada.id,
               nombre: actividadSeleccionada.nombre,
@@ -819,12 +762,11 @@ export class MiembroDetailComponent implements OnInit {
           estado: 'PENDIENTE',
         };
         console.log("Cobro Payload:", cobroPayload);
-
-        // Enviar el cobro
+  
         this.cobrosService.addCobroMiembro(cobroPayload).subscribe({
           next: () => {
-            this.loadMemberDetails();
-            this.loadAvailableActividades();  // Recargar los detalles del miembro después del cobro
+            this.loadMemberDetails();  
+            this.loadAvailableActividades();  
           },
           error: (error) => {
             console.error('Error al añadir el cobro:', error);
@@ -836,7 +778,7 @@ export class MiembroDetailComponent implements OnInit {
       }
     });
   }
-
+  
 
   confirmDarDeBajaActividad(actividadId: number): void {
     if (confirm("¿Confirma que desea dar de baja al miembro de esta actividad?")) {
@@ -847,13 +789,11 @@ export class MiembroDetailComponent implements OnInit {
   onDarDeBajaActividad(inscripcionId: number): void {
     this.miembroService.darDeBajaInscripcion(inscripcionId, new Date().toISOString().split('T')[0]).subscribe({
       next: () => {
-        // Actualizar inscripciones
         const inscripcion = this.data.inscripciones.find((i: { id: number; }) => i.id === inscripcionId);
         if (inscripcion) {
-          inscripcion.fechaBaja = new Date(); // Marcar como dada de baja
+          inscripcion.fechaBaja = new Date(); 
         }
 
-        // Recalcular actividades disponibles
         this.loadAvailableActividades();
       },
       error: (error) => {

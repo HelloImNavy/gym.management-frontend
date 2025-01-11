@@ -159,7 +159,6 @@ export class EditCobroFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const today = new Date().toISOString().split('T')[0];
 
     if (!this.data || !this.data.cobro) {
       console.error('Datos no recibidos correctamente');
@@ -170,10 +169,9 @@ export class EditCobroFormComponent implements OnInit {
       concepto: [this.data.cobro.concepto, Validators.required],
       monto: [this.data.cobro.monto, Validators.required],
       estado: [this.data.cobro.estado, Validators.required],
-      fechaPago: [this.data.cobro.fechaPago ? new Date(this.data.cobro.fechaPago).toISOString().split('T')[0] : null]
+      fechaPago: [this.data.cobro.fechaPago ? new Date(this.data.cobro.fechaPago) : null]
     });
 
-    // Llamamos al método para aplicar las reglas de deshabilitar fechaPago si el estado es PENDIENTE
     this.onEstadoChange();
   }
 
@@ -182,15 +180,16 @@ export class EditCobroFormComponent implements OnInit {
     const fechaPagoControl = this.cobroForm.get('fechaPago');
 
     if (estado === 'PENDIENTE') {
-      fechaPagoControl?.disable(); // Deshabilitar la fecha de pago si el estado es PENDIENTE
-      fechaPagoControl?.reset(); // Limpiar la fecha de pago
+      fechaPagoControl?.disable(); 
+      fechaPagoControl?.reset(); 
     } else {
-      fechaPagoControl?.enable(); // Habilitar la fecha de pago si el estado es PAGADO
+      fechaPagoControl?.enable(); 
     }
   }
 
   onSubmit(): void {
     if (this.cobroForm.valid) {
+      console.log(this.cobroForm.get("fechaPago")?.value);
       const cobroActualizado = { ...this.data.cobro, ...this.cobroForm.value };
       this.cobrosService.updateCobro(cobroActualizado.id, cobroActualizado).subscribe(() => {
         this.dialogRef.close(cobroActualizado);

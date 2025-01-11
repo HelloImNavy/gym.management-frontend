@@ -62,41 +62,39 @@ import { MatSortModule } from '@angular/material/sort';
           </mat-select>
         </mat-form-field>
 
-        <!-- Botón para resetear filtros -->
+
         <button mat-raised-button style="height: 55px;" color=#800000 (click)="resetearFiltros()">Resetear Filtros</button>
       </div>
 
     
       <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
 
-        <!-- Nueva columna de estado -->
+
         <ng-container matColumnDef="estado">
-          <th mat-header-cell *matHeaderCellDef style="width: 50px;"></th>
+          <th mat-header-cell *matHeaderCellDef style="width: 60px;"></th>
           <td mat-cell *matCellDef="let miembro">
             <mat-icon *ngIf="!miembro.fechaBaja" color="primary" style="color: green;">person</mat-icon>
             <mat-icon *ngIf="miembro.fechaBaja" color="warn" style="color: red;">person_off</mat-icon>
           </td>
         </ng-container>
 
-        <!-- Columna de nombre -->
+      
         <ng-container matColumnDef="nombre">
           <th mat-header-cell *matHeaderCellDef>Nombre</th>
           <td mat-cell *matCellDef="let miembro">{{ miembro.nombre }}</td>
         </ng-container>
 
-        <!-- Columna de apellidos -->
+
         <ng-container matColumnDef="apellidos">
           <th mat-header-cell *matHeaderCellDef>Apellidos</th>
           <td mat-cell *matCellDef="let miembro">{{ miembro.apellidos }}</td>
         </ng-container>
 
-        <!-- Columna de teléfono -->
         <ng-container matColumnDef="telefono">
           <th mat-header-cell *matHeaderCellDef>Teléfono</th>
           <td mat-cell *matCellDef="let miembro">{{ miembro.telefono }}</td>
         </ng-container>
 
-        <!-- Columna de acciones -->
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef>Acciones</th>
           <td mat-cell *matCellDef="let miembro">
@@ -235,7 +233,6 @@ export class MiembroListaComponent implements OnInit {
   aplicarFiltros(): void {
     let filtered = this.miembros;
 
-    // Filtrar por nombre o apellidos
     if (this.filterValue) {
       filtered = filtered.filter(miembro =>
         miembro.nombre.toLowerCase().includes(this.filterValue.toLowerCase()) ||
@@ -283,7 +280,7 @@ export class MiembroListaComponent implements OnInit {
 
   abrirDetallesMiembro(miembro: any): void {
     const dialogRef = this.dialog.open(MiembroDetailComponent, {
-      height: '600px',
+      height: '650px',
       data: miembro
     });
 

@@ -10,9 +10,7 @@ import { ProductoService } from '../services/producto.service';
   selector: 'app-contabilidad',
   template: `
     <div class="contabilidad-container">
-      <!-- Fila de combo y tabla -->
       <div class="header-row">
-        <!-- Combo de año -->
         <mat-form-field>
           <mat-label>Año</mat-label>
           <mat-select [(value)]="anioSeleccionado" (selectionChange)="cargarDatos()">
@@ -20,7 +18,6 @@ import { ProductoService } from '../services/producto.service';
           </mat-select>
         </mat-form-field>
 
-        <!-- Tabla de Totales -->
         <table *ngIf="anioSeleccionado" class="tabla-totales">
           <thead>
             <tr>
@@ -39,12 +36,10 @@ import { ProductoService } from '../services/producto.service';
         </table>
       </div>
 
-      <!-- Gráfico de barras de Ingresos -->
       <div *ngIf="chartOptions.data[0].dataPoints.length > 0">
         <canvasjs-chart [options]="chartOptions" [styles]="{ width: '100%', height: '360px' }"></canvasjs-chart>
       </div>
 
-      <!-- Gráfico de barras de Pagos Productos -->
       <div *ngIf="chartPagosOptions.data[0].dataPoints.length > 0">
         <canvasjs-chart [options]="chartPagosOptions" [styles]="{ width: '100%', height: '360px' }"></canvasjs-chart>
       </div>
@@ -55,41 +50,40 @@ import { ProductoService } from '../services/producto.service';
       padding: 20px;
     }
 
-    /* Fila de combo y tabla */
+  
     .header-row {
       display: flex;
-      justify-content: space-between; /* Espaciado entre combo y tabla */
-      align-items: center; /* Alineación vertical */
-      margin-bottom: 20px; /* Separación entre la fila y los gráficos */
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 20px; 
     }
 
     mat-form-field {
-      width: 200px; /* Ajusta el tamaño del combo */
+      width: 200px; 
     }
 
-    /* Estilos para la tabla */
+    
     .tabla-totales {
-      width: 60%; /* Ajusta el tamaño de la tabla */
-      margin: 0 auto; /* Centra la tabla horizontalmente */
-      border-collapse: collapse; /* Elimina el espacio entre las celdas */
-      text-align: center; /* Centra el contenido de las celdas */
-      margin-bottom: 20px; /* Espacio debajo de la tabla */
+      width: 60%; 
+      margin: 0 auto; 
+      border-collapse: collapse; 
+      text-align: center; 
+      margin-bottom: 20px; 
     }
 
     .tabla-totales th, .tabla-totales td {
-      padding: 8px; /* Espaciado dentro de las celdas */
-      border: 1px solid #ddd; /* Borde alrededor de las celdas */
+      padding: 8px; 
+      border: 1px solid #ddd; 
     }
 
     .tabla-totales th {
-      background-color: #f2f2f2; /* Color de fondo para los encabezados */
+      background-color: #f2f2f2; 
     }
 
     .tabla-totales td {
       font-weight: bold;
     }
 
-    /* Estilo para los gráficos */
     canvasjs-chart {
       display: block;
       margin: 0 auto;
@@ -108,7 +102,7 @@ import { ProductoService } from '../services/producto.service';
 export class ContabilidadComponent implements OnInit {
 
   anosDisponibles: number[] = [];
-  anioSeleccionado: number = new Date().getFullYear(); // Año seleccionado
+  anioSeleccionado: number = new Date().getFullYear(); 
   chartOptions: any;
   chartPagosOptions: any;
   totalAnualIngresos: number = 0;
@@ -132,8 +126,8 @@ export class ContabilidadComponent implements OnInit {
         valueFormatString: "#,##0€"
       },
       data: [{
-        type: "line", // Asegúrate de usar un tipo de gráfico que soporte líneas
-        lineThickness: 2, // Cambia este valor para hacer la línea más estrecha
+        type: "line", 
+        lineThickness: 2, 
         yValueFormatString: "#,##0€",
         color: "#01b8aa",
         dataPoints: []
@@ -154,7 +148,7 @@ export class ContabilidadComponent implements OnInit {
       },
       data: [{
         type: "line",
-        lineThickness: 2, // Cambia este valor según lo necesario
+        lineThickness: 2, 
         yValueFormatString: "#,##0€",
         color: "#f39c12",
         dataPoints: []
@@ -165,7 +159,7 @@ export class ContabilidadComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarAnosDisponibles();
-    this.cargarDatos(); // Cargar datos (ingresos y pagos) al arrancar
+    this.cargarDatos(); 
   }
 
   cargarAnosDisponibles(): void {
